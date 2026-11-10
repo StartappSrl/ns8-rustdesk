@@ -14,7 +14,28 @@ Il modulo esegue tre container Podman rootless:
 hbbs e hbbr usano la rete dell'host, necessaria per le connessioni dirette
 (P2P). Poiché le porte sono fisse, è possibile **una sola istanza per nodo**.
 
-Le versioni delle immagini sono fissate in `build-images.sh`.
+Le versioni delle immagini sono fissate in `build-images.sh` e in
+`rustdesk-api/Containerfile`.
+
+## Lingua italiana
+
+Il modulo è localizzato in italiano in tutte le sue parti:
+
+- **Interfaccia del modulo in NS8**: segue la lingua scelta in cluster-admin
+  (traduzioni in `ui/public/i18n/it`).
+- **Console web**: il modulo pubblica una propria immagine `rustdesk-api`,
+  costruita da `rustdesk-api/Containerfile`. Parte dall'immagine upstream e
+  aggiunge l'italiano alla console (`it.json`), ai messaggi del server
+  (`it.toml`) e alla pagina di benvenuto (`hello.html`). L'italiano è la
+  lingua predefinita; ogni utente può cambiarla dal menu della console.
+- **Client RustDesk**: è già disponibile in italiano, si sceglie dalle
+  impostazioni del client.
+
+Quando Renovate propone una nuova versione di `lejianwen/rustdesk-api`,
+aggiorna anche `RUSTDESK_API_WEB_COMMIT` nel Containerfile e traduci le
+eventuali nuove chiavi: lo script `patch-italian.sh` blocca la build se il
+codice upstream cambia in modo incompatibile, invece di produrre una console
+non tradotta.
 
 ## Installazione
 
@@ -127,6 +148,7 @@ La rimozione cancella anche la rotta Traefik e chiude le porte nel firewall.
       etc/state-include.conf         cosa finisce nel backup
       systemd/user/*.service         unit dei tre container
       update-module.d/               hook eseguiti dopo update-module
+    rustdesk-api/                    immagine della console web in italiano
     ui/                              interfaccia del modulo (Vue 2 + Carbon)
     tests/                           test Robot Framework
     .github/workflows/               build, pubblicazione e test
@@ -152,7 +174,8 @@ La rimozione cancella anche la rotta Traefik e chiude le porte nel firewall.
 4. Il workflow **Publish images** costruisce l'immagine e la pubblica come
    `ghcr.io/startappsrl/rustdesk:main` (e `:latest`).
 5. Su GitHub, in **Packages → rustdesk → Package settings**, imposta la
-   visibilità su **Public**: NS8 non può scaricare immagini private.
+   visibilità su **Public**: NS8 non può scaricare immagini private. Fai lo
+   stesso per il package **rustdesk-api**.
 
 ### Ciclo di sviluppo
 

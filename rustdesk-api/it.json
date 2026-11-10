@@ -1,0 +1,535 @@
+{
+  "Login": {
+    "One": "Accedi"
+  },
+  "Logout": {
+    "One": "Esci"
+  },
+  "Register": {
+    "One": "Registrati"
+  },
+  "Confirm": {
+    "One": "Conferma"
+  },
+  "Username": {
+    "One": "Nome utente"
+  },
+  "Password": {
+    "One": "Password"
+  },
+  "LoginSuccess": {
+    "One": "Accesso effettuato"
+  },
+  "ForgotPassword": {
+    "One": "Password dimenticata"
+  },
+  "ResetPassword": {
+    "One": "Reimposta password"
+  },
+  "ChangePassword": {
+    "One": "Cambia password"
+  },
+  "Userinfo": {
+    "One": "Profilo utente"
+  },
+  "ParamRequired": {
+    "One": "{param} è obbligatorio"
+  },
+  "HasBind": {
+    "One": "Collegato"
+  },
+  "NoBind": {
+    "One": "Non collegato"
+  },
+  "UnBind": {
+    "One": "Scollega"
+  },
+  "ToBind": {
+    "One": "Collega"
+  },
+  "Confirm?": {
+    "One": "Confermi {param}?"
+  },
+  "Cancel": {
+    "One": "Annulla"
+  },
+  "Platform": {
+    "One": "Piattaforma"
+  },
+  "Status": {
+    "One": "Stato"
+  },
+  "Actions": {
+    "One": "Azioni"
+  },
+  "Filter": {
+    "One": "Filtra"
+  },
+  "Add": {
+    "One": "Aggiungi"
+  },
+  "Hostname": {
+    "One": "Nome host"
+  },
+  "Alias": {
+    "One": "Alias"
+  },
+  "Hash": {
+    "One": "Hash"
+  },
+  "Tags": {
+    "One": "Tag"
+  },
+  "Edit": {
+    "One": "Modifica"
+  },
+  "Delete": {
+    "One": "Elimina"
+  },
+  "Create": {
+    "One": "Crea"
+  },
+  "Update": {
+    "One": "Aggiorna"
+  },
+  "LoginName": {
+    "One": "Nome di accesso"
+  },
+  "Submit": {
+    "One": "Invia"
+  },
+  "OperationSuccess": {
+    "One": "Operazione completata"
+  },
+  "Owner": {
+    "One": "Proprietario"
+  },
+  "Name": {
+    "One": "Nome"
+  },
+  "Color": {
+    "One": "Colore"
+  },
+  "CreatedAt": {
+    "One": "Creato il"
+  },
+  "UpdatedAt": {
+    "One": "Aggiornato il"
+  },
+  "Memory": {
+    "One": "Memoria"
+  },
+  "Os": {
+    "One": "Sistema operativo"
+  },
+  "Uuid": {
+    "One": "UUID"
+  },
+  "Version": {
+    "One": "Versione"
+  },
+  "Type": {
+    "One": "Tipo"
+  },
+  "Group": {
+    "One": "Gruppo"
+  },
+  "CommonGroup": {
+    "One": "Gruppo normale"
+  },
+  "CommonGroupNote": {
+    "One": "Solo gli amministratori vedono i membri del gruppo e i loro dispositivi"
+  },
+  "SharedGroup": {
+    "One": "Gruppo condiviso"
+  },
+  "SharedGroupNote": {
+    "One": "Tutti gli utenti vedono i membri del gruppo e i loro dispositivi"
+  },
+  "Nickname": {
+    "One": "Nome visualizzato"
+  },
+  "UserTags": {
+    "One": "Tag utente"
+  },
+  "UserAddressBook": {
+    "One": "Rubrica utente"
+  },
+  "IsAdmin": {
+    "One": "Amministratore"
+  },
+  "PleaseInputNewPassword": {
+    "One": "Inserisci la nuova password"
+  },
+  "AutoRegister": {
+    "One": "Registrazione automatica"
+  },
+  "AutoRegisterNote": {
+    "One": "Se attiva, quando un utente accede con OAuth senza collegarsi a un account esistente viene creato automaticamente un nuovo account"
+  },
+  "ThirdName": {
+    "One": "Nome sul servizio esterno"
+  },
+  "Close": {
+    "One": "Chiudi"
+  },
+  "OauthBinding": {
+    "One": "Stai autorizzando il collegamento"
+  },
+  "OauthLogining": {
+    "One": "Stai autorizzando l’accesso"
+  },
+  "OauthCloseNote": {
+    "One": "Se non sei stato tu ad avviare l’autorizzazione, chiudi questa pagina"
+  },
+  "OperationSuccessAndCloseAfter3Seconds": {
+    "One": "Operazione completata, la pagina si chiude tra 3 secondi"
+  },
+  "ConfirmOauth": {
+    "One": "Conferma autorizzazione"
+  },
+  "Device": {
+    "One": "Dispositivo"
+  },
+  "ChangeLang": {
+    "One": "Cambia lingua"
+  },
+  "My": {
+    "One": "Personale"
+  },
+  "Info": {
+    "One": "Informazioni"
+  },
+  "AddressBooks": {
+    "One": "Rubriche"
+  },
+  "System": {
+    "One": "Sistema"
+  },
+  "PeerManage": {
+    "One": "Dispositivi"
+  },
+  "AddressBookManage": {
+    "One": "Rubriche"
+  },
+  "GroupManage": {
+    "One": "Gruppi"
+  },
+  "UserManage": {
+    "One": "Utenti"
+  },
+  "UserAdd": {
+    "One": "Nuovo utente"
+  },
+  "UserEdit": {
+    "One": "Modifica utente"
+  },
+  "TagsManage": {
+    "One": "Tag"
+  },
+  "OauthManage": {
+    "One": "OAuth"
+  },
+  "LoginLog": {
+    "One": "Registro accessi"
+  },
+  "LastOnlineTime": {
+    "One": "Ultima connessione"
+  },
+  "JustNow": {
+    "One": "Adesso"
+  },
+  "MinutesAgo": {
+    "One": "{param} minuto fa",
+    "Other": "{param} minuti fa"
+  },
+  "HoursAgo": {
+    "One": "{param} ora fa",
+    "Other": "{param} ore fa"
+  },
+  "DaysAgo": {
+    "One": "{param} giorno fa",
+    "Other": "{param} giorni fa"
+  },
+  "MonthsAgo": {
+    "One": "{param} mese fa",
+    "Other": "{param} mesi fa"
+  },
+  "YearsAgo": {
+    "One": "{param} anno fa",
+    "Other": "{param} anni fa"
+  },
+  "MinutesLess": {
+    "One": "Meno di {param} minuto",
+    "Other": "Meno di {param} minuti"
+  },
+  "HoursLess": {
+    "One": "Meno di {param} ora",
+    "Other": "Meno di {param} ore"
+  },
+  "DaysLess": {
+    "One": "Meno di {param} giorno",
+    "Other": "Meno di {param} giorni"
+  },
+  "Export": {
+    "One": "Esporta"
+  },
+  "AddToAddressBook": {
+    "One": "Aggiungi alla rubrica"
+  },
+  "BatchDelete": {
+    "One": "Elimina selezionati"
+  },
+  "PleaseSelectData": {
+    "One": "Seleziona almeno un elemento"
+  },
+  "PasswordType": {
+    "One": "Tipo di password"
+  },
+  "OncePassword": {
+    "One": "Password monouso"
+  },
+  "FixedPassword": {
+    "One": "Password fissa"
+  },
+  "FixedPasswordWarning": {
+    "One": "Una password fissa può essere divulgata: usala con cautela. È consigliata la password monouso"
+  },
+  "ExpireTime": {
+    "One": "Scadenza"
+  },
+  "ShareByWebClient": {
+    "One": "Condividi tramite client web"
+  },
+  "Minutes": {
+    "One": "{param} minuto",
+    "Other": "{param} minuti"
+  },
+  "Hours": {
+    "One": "{param} ora",
+    "Other": "{param} ore"
+  },
+  "Days": {
+    "One": "{param} giorno",
+    "Other": "{param} giorni"
+  },
+  "Weeks": {
+    "One": "{param} settimana",
+    "Other": "{param} settimane"
+  },
+  "Months": {
+    "One": "{param} mese",
+    "Other": "{param} mesi"
+  },
+  "Forever": {
+    "One": "Nessuna scadenza"
+  },
+  "Error": {
+    "One": "Errore"
+  },
+  "IDNotExist": {
+    "One": "L’ID non esiste"
+  },
+  "RemoteDesktopOffline": {
+    "One": "Il dispositivo remoto non è in linea"
+  },
+  "KeyMismatch": {
+    "One": "La chiave non corrisponde"
+  },
+  "KeyOveruse": {
+    "One": "Chiave usata troppe volte"
+  },
+  "Link": {
+    "One": "Link"
+  },
+  "CopySuccess": {
+    "One": "Copiato"
+  },
+  "CopyFailed": {
+    "One": "Copia non riuscita"
+  },
+  "Timeout": {
+    "One": "Tempo scaduto"
+  },
+  "AuditConnLog": {
+    "One": "Registro connessioni"
+  },
+  "Peer": {
+    "One": "Dispositivo",
+    "Other": "Dispositivi"
+  },
+  "FromPeer": {
+    "One": "Dal dispositivo"
+  },
+  "FromName": {
+    "One": "Da"
+  },
+  "CloseTime": {
+    "One": "Chiusura"
+  },
+  "AuditFileLog": {
+    "One": "Registro trasferimenti file"
+  },
+  "Common": {
+    "One": "Generale"
+  },
+  "File": {
+    "One": "File"
+  },
+  "Num": {
+    "One": "Numero"
+  },
+  "Ip": {
+    "One": "IP"
+  },
+  "FileName": {
+    "One": "Nome file"
+  },
+  "FileInfo": {
+    "One": "Dettagli file"
+  },
+  "Path": {
+    "One": "Percorso"
+  },
+  "IndexNum": {
+    "One": "Indice"
+  },
+  "ToRemote": {
+    "One": "Verso il remoto"
+  },
+  "ToLocal": {
+    "One": "Verso il locale"
+  },
+  "AddressBookName": {
+    "One": "Nome rubrica"
+  },
+  "AddRule": {
+    "One": "Aggiungi regola"
+  },
+  "ShareRules": {
+    "One": "Regole di condivisione"
+  },
+  "Rule": {
+    "One": "Regola"
+  },
+  "Read": {
+    "One": "Lettura"
+  },
+  "ReadWrite": {
+    "One": "Lettura e scrittura"
+  },
+  "FullControl": {
+    "One": "Controllo completo"
+  },
+  "ShareTo": {
+    "One": "Condividi con"
+  },
+  "MyAddressBook": {
+    "One": "La mia rubrica"
+  },
+  "AddressBook": {
+    "One": "Rubrica"
+  },
+  "AddressBookNameManage": {
+    "One": "Nomi delle rubriche"
+  },
+  "MyAddressBookTips": {
+    "One": "“La mia rubrica” è la rubrica predefinita del sistema: non si può modificare né eliminare"
+  },
+  "LastOnlineIp": {
+    "One": "Ultimo IP"
+  },
+  "OldPassword": {
+    "One": "Password attuale"
+  },
+  "NewPasswordEqualOldPassword": {
+    "One": "La nuova password deve essere diversa da quella attuale"
+  },
+  "NewPassword": {
+    "One": "Nuova password"
+  },
+  "ConfirmPassword": {
+    "One": "Conferma password"
+  },
+  "PasswordNotMatchConfirmPassword": {
+    "One": "Le due password non coincidono"
+  },
+  "ToLogin": {
+    "One": "Vai all’accesso"
+  },
+  "UserToken": {
+    "One": "Token utente"
+  },
+  "BatchAddToAB": {
+    "One": "Aggiungi selezionati alla rubrica"
+  },
+  "BatchEditTags": {
+    "One": "Modifica tag dei selezionati"
+  },
+  "User": {
+    "One": "Utente"
+  },
+  "ShareRecord": {
+    "One": "Condivisioni"
+  },
+  "Second": {
+    "One": "Secondi"
+  },
+  "Captcha": {
+    "One": "Codice di verifica"
+  },
+  "ServerCmd": {
+    "One": "Comandi server"
+  },
+  "Simple": {
+    "One": "Semplice"
+  },
+  "Advanced": {
+    "One": "Avanzato"
+  },
+  "Available": {
+    "One": "Disponibile"
+  },
+  "NotAvailable": {
+    "One": "Non disponibile"
+  },
+  "ServerCmdTips": {
+    "One": "Funzione sperimentale. Assicurati che l’API, hbbs e hbbr siano sullo stesso indirizzo di loopback. Per maggiori informazioni consulta la {wiki}"
+  },
+  "Refresh": {
+    "One": "Aggiorna"
+  },
+  "Save": {
+    "One": "Salva"
+  },
+  "SendCustom": {
+    "One": "Invia comando personalizzato"
+  },
+  "Send": {
+    "One": "Invia"
+  },
+  "SendCmd": {
+    "One": "Invia comando"
+  },
+  "Result": {
+    "One": "Risultato"
+  },
+  "DeviceGroupManage": {
+    "One": "Gruppi di dispositivi"
+  },
+  "Drop file here or click to upload": {
+    "One": "Trascina qui il file o fai clic per caricarlo"
+  },
+  "Please upload csv file": {
+    "One": "Carica un file CSV"
+  },
+  "Columns": {
+    "One": "Colonne"
+  },
+  "You can reference export file": {
+    "One": "Puoi usare come modello un file esportato"
+  },
+  "Remark": {
+    "One": "Note"
+  }
+}

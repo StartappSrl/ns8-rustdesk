@@ -1,0 +1,169 @@
+[Test]
+description = "test"
+one = "test1"
+other = "Test2 {{.P0}}"
+
+[ParamsError]
+description = "Params validation failed."
+one = "Parametri non validi."
+other = "Parametri non validi."
+
+[OperationFailed]
+description = "OperationFailed."
+one = "Operazione non riuscita."
+other = "Operazione non riuscita."
+
+[OperationSuccess]
+description = "OperationSuccess."
+one = "Operazione completata."
+other = "Operazione completata."
+
+[ItemExists]
+description = "Item already exists."
+one = "L’elemento esiste già."
+other = "L’elemento esiste già."
+
+[ItemNotFound]
+description = "Item not found."
+one = "Elemento non trovato."
+other = "Elemento non trovato."
+
+[NoAccess]
+description = "No access."
+one = "Accesso non consentito."
+other = "Accesso non consentito."
+
+[NeedLogin]
+description = "Need login."
+one = "Effettua prima l’accesso."
+other = "Effettua prima l’accesso."
+
+[UsernameOrPasswordError]
+description = "Username or password error."
+one = "Nome utente o password errati."
+other = "Nome utente o password errati."
+
+[SystemError]
+description = "System error."
+one = "Errore di sistema."
+other = "Errore di sistema."
+
+[ConfigNotFound]
+description = "Config not found."
+one = "Configurazione non trovata."
+other = "Configurazione non trovata."
+
+[OauthExpired]
+description = "Oauth expired."
+one = "Autorizzazione OAuth scaduta, riprova."
+other = "Autorizzazione OAuth scaduta, riprova."
+
+[OauthFailed]
+description = "Oauth failed."
+one = "Autorizzazione OAuth non riuscita."
+other = "Autorizzazione OAuth non riuscita."
+
+[OauthHasBindOtherUser]
+description = "Oauth has bind other user."
+one = "Questo account OAuth è già collegato a un altro utente."
+other = "Questo account OAuth è già collegato a un altro utente."
+
+[ParamIsEmpty]
+description = "Param is empty."
+one = "{{.P0}} è vuoto."
+other = "{{.P0}} è vuoto."
+
+[BindFail]
+description = "Bind fail."
+one = "Collegamento non riuscito."
+other = "Collegamento non riuscito."
+
+[BindSuccess]
+description = "Bind success."
+one = "Collegamento completato."
+other = "Collegamento completato."
+
+[OauthHasBeenSuccess]
+description = "Oauth has been success."
+one = "Autorizzazione OAuth già completata."
+other = "Autorizzazione OAuth già completata."
+
+[OauthSuccess]
+description = "Oauth success."
+one = "Autorizzazione OAuth completata."
+other = "Autorizzazione OAuth completata."
+
+[OauthRegisterSuccess]
+description = "Oauth register success."
+one = "Registrazione tramite OAuth completata."
+other = "Registrazione tramite OAuth completata."
+
+[OauthRegisterFailed]
+description = "Oauth register failed."
+one = "Registrazione tramite OAuth non riuscita."
+other = "Registrazione tramite OAuth non riuscita."
+
+[GetOauthTokenError]
+description = "Get oauth token error."
+one = "Impossibile ottenere il token OAuth."
+other = "Impossibile ottenere il token OAuth."
+
+[GetOauthUserInfoError]
+description = "Get oauth user info error."
+one = "Impossibile ottenere i dati utente da OAuth."
+other = "Impossibile ottenere i dati utente da OAuth."
+
+[DecodeOauthUserInfoError]
+description = "Decode oauth user info error."
+one = "Impossibile leggere i dati utente ricevuti da OAuth."
+other = "Impossibile leggere i dati utente ricevuti da OAuth."
+
+[OldPasswordError]
+description = "Old password error."
+one = "La password attuale non è corretta."
+other = "La password attuale non è corretta."
+
+[DefaultGroup]
+description = "Default group"
+one = "Gruppo predefinito"
+other = "Gruppo predefinito"
+
+[ShareGroup]
+description = "Share group"
+one = "Gruppo condiviso"
+other = "Gruppo condiviso"
+
+[RegisterClosed]
+description = "Register closed."
+one = "Le registrazioni sono chiuse."
+other = "Le registrazioni sono chiuse."
+
+[CaptchaRequired]
+description = "Captcha required."
+one = "Inserisci il codice di verifica."
+other = "Inserisci il codice di verifica."
+
+[CaptchaError]
+description = "Captcha error."
+one = "Codice di verifica errato."
+other = "Codice di verifica errato."
+
+[PwdLoginDisabled]
+description = "Password login disabled."
+one = "L’accesso con password è disattivato."
+other = "L’accesso con password è disattivato."
+
+[CannotShareToSelf]
+description = "Cannot share to self."
+one = "Non puoi condividere con te stesso."
+other = "Non puoi condividere con te stesso."
+
+[Banned]
+description = "Banned."
+one = "Accesso bloccato."
+other = "Accesso bloccato."
+
+[RegisterSuccessWaitAdminConfirm]
+description = "Register success, wait admin confirm."
+one = "Registrazione completata, in attesa di approvazione da parte di un amministratore."
+other = "Registrazione completata, in attesa di approvazione da parte di un amministratore."

@@ -9,15 +9,20 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "rustdesk/rustdesk-server"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["lejianwen/rustdesk-api"],
+      "versioning": "loose",
+      "prBodyNotes": [
+        "**Prima del merge:** aggiorna `RUSTDESK_API_WEB_COMMIT` in `rustdesk-api/Containerfile` con il commit di rustdesk-api-web usato da questa versione, e controlla se `en.json` / `en.toml` hanno nuove chiavi da tradurre in `it.json` / `it.toml`."
+      ]
     },
     {
-      "fileMatch": ["build-images.sh"],
-      "matchStrings": [
-        "docker\\.io/lejianwen/rustdesk-api:(?<currentValue>v[0-9]+\\.[0-9]+(\\.[0-9]+)?)"
-      ],
-      "datasourceTemplate": "docker",
-      "depNameTemplate": "lejianwen/rustdesk-api",
-      "versioningTemplate": "loose"
+      "matchPackageNames": ["node"],
+      "matchFileNames": ["rustdesk-api/Containerfile"],
+      "allowedVersions": "<21"
     }
   ]
 }

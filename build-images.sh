@@ -19,10 +19,18 @@ reponame="rustdesk"
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
 
-# Upstream container images. Pin exact versions: every module release
+# Upstream container image. Pin exact versions: every module release
 # must be reproducible. Renovate opens PRs when new versions come out.
 rustdesk_server_image="docker.io/rustdesk/rustdesk-server:1.1.16"
-rustdesk_api_image="docker.io/lejianwen/rustdesk-api:v2.7"
+
+# The API/web console image is built here, with the Italian translation
+# (see rustdesk-api/Containerfile). It is published next to the module
+# image, with the same tag.
+echo "Build the rustdesk-api image with the Italian console..."
+buildah build --layers --file rustdesk-api/Containerfile \
+    --tag "${repobase}/rustdesk-api" rustdesk-api
+images+=("${repobase}/rustdesk-api")
+rustdesk_api_image="${repobase}/rustdesk-api:${IMAGETAG:-latest}"
 
 # Create a new empty container image
 container=$(buildah from scratch)
