@@ -7,8 +7,8 @@ Il modulo esegue tre container Podman rootless:
 
 | Servizio | Immagine | Ruolo | Porte |
 |---|---|---|---|
-| `hbbs.service` | `rustdesk/rustdesk-server` | Server ID / rendezvous | 21115/tcp, 21116/tcp+udp (21118/tcp per il client da browser) |
-| `hbbr.service` | `rustdesk/rustdesk-server` | Server relay | 21117/tcp (21119/tcp per il client da browser) |
+| `hbbs.service` | `rustdesk/rustdesk-server` | Server ID / rendezvous | 21115/tcp, 21116/tcp+udp (21118/tcp locale, per il client da browser via Traefik) |
+| `hbbr.service` | `rustdesk/rustdesk-server` | Server relay | 21117/tcp (21119/tcp locale, per il client da browser via Traefik) |
 | `rustdesk-api.service` | `lejianwen/rustdesk-api` | Server API e console web: utenti, dispositivi, rubriche, log | 127.0.0.1:`TCP_PORT`, pubblicata da Traefik in HTTPS |
 
 hbbs e hbbr usano la rete dell'host, necessaria per le connessioni dirette
@@ -62,7 +62,7 @@ comando:
 | `rustdesk_host` | Nome host o IP pubblico a cui si collegano i client per ID e relay. Se omesso vale `host` |
 | `lets_encrypt` | Richiede un certificato Let's Encrypt per `host` |
 | `http2https` | Reindirizza HTTP su HTTPS |
-| `web_client` | Abilita il client da browser e apre le porte 21118 e 21119 (vedi sotto) |
+| `web_client` | Abilita il client da browser su `https://<host>/webclient/` (vedi sotto) |
 | `ban_threshold` | Accessi falliti in 5 minuti prima di bloccare l'IP per 30 minuti. Default `5`, `0` disattiva |
 | `log_retention_days` | Giorni di conservazione dei log di accessi, connessioni e file. Default `180`, `0` per sempre |
 | `admin_allowlist` | IP o reti (CIDR) da cui si può aprire la console web. Vuoto: da ovunque |
@@ -97,13 +97,22 @@ Per impostare una nuova password:
 
 ### Client da browser
 
-Il client web di rustdesk-api si collega a hbbs/hbbr tramite websocket sulle
-porte 21118 e 21119. I browser rifiutano i websocket non cifrati (`ws://`) da
-una pagina HTTPS, quindi con la sola opzione `web_client` il client da browser
-si apre ma non si connette. Serve un proxy TLS (`wss://`) davanti a queste
-porte, da impostare poi in `RUSTDESK_API_RUSTDESK_WS_HOST`. Questa parte non è
-ancora automatizzata nel modulo: è il candidato naturale per una prossima
-release.
+Con `web_client` attivo, il client RustDesk da browser è disponibile su
+`https://<host>/webclient/` e dalla console web (anche tramite i link di
+condivisione verso un dispositivo). Serve per collegarsi da un computer dove
+non si può installare RustDesk; il computer da controllare deve comunque
+avere il client installato.
+
+Il client da browser comunica con hbbs e hbbr tramite websocket. Il client
+originale cercherebbe `wss://<server>:21118` e `:21119`, dove però hbbs e
+hbbr non hanno TLS. Il modulo modifica il client (`rustdesk-api/patch-webclient.sh`)
+perché usi `wss://<host>/ws/id` e `wss://<host>/ws/relay`: Traefik termina
+il TLS con il certificato della console e inoltra a hbbs e hbbr. Le porte
+21118 e 21119 restano chiuse nel firewall.
+
+Limiti: le sessioni passano sempre dal relay (niente connessione diretta),
+quindi sono più lente dell'app installata, e le funzioni disponibili sono
+meno di quelle del client desktop.
 
 ## Sicurezza
 

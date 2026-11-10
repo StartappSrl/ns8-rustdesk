@@ -177,6 +177,13 @@
             <NsButton kind="tertiary" :icon="Launch20" @click="openConsole">{{
               $t("settings.open_console")
             }}</NsButton>
+            <NsButton
+              v-if="savedWebClient"
+              kind="ghost"
+              :icon="Launch20"
+              @click="openWebClient"
+              >{{ $t("settings.open_web_client") }}</NsButton
+            >
           </template>
           <p v-else class="hint">{{ $t("settings.not_configured") }}</p>
         </cv-tile>
@@ -225,6 +232,7 @@ export default {
       // values currently applied on the server
       savedHost: "",
       savedRustdeskHost: "",
+      savedWebClient: false,
       publicKey: "",
       loading: {
         getConfiguration: false,
@@ -276,6 +284,9 @@ export default {
     this.getConfiguration();
   },
   methods: {
+    openWebClient() {
+      window.open(`${this.apiUrl}/webclient/`, "_blank");
+    },
     openConsole() {
       window.open(`${this.apiUrl}/_admin/`, "_blank");
     },
@@ -333,6 +344,7 @@ export default {
       this.adminAllowlist = config.admin_allowlist.join("\n");
       this.savedHost = config.host;
       this.savedRustdeskHost = config.rustdesk_host;
+      this.savedWebClient = config.web_client;
       this.publicKey = config.public_key;
 
       this.focusElement("host");

@@ -46,7 +46,7 @@
         },
         "web_client": {
             "type": "boolean",
-            "description": "Enable the browser client and open the websocket ports 21118 and 21119"
+            "description": "Enable the browser client at https://<host>/webclient/. It connects to hbbs and hbbr through Traefik (wss://<host>/ws/id and /ws/relay)"
         },
         "ban_threshold": {
             "type": "integer",

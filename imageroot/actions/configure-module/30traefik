@@ -10,6 +10,8 @@
 # - MODULE_ID           host -> API server and web console
 # - MODULE_ID-admin     host + /_admin     -> only from the allowlist
 # - MODULE_ID-adminapi  host + /api/admin  -> only from the allowlist
+# - MODULE_ID-wsid      host + /ws/id      -> hbbs websocket (browser client)
+# - MODULE_ID-wsrelay   host + /ws/relay   -> hbbr websocket (browser client)
 #
 # The client API (/api/...) stays public: RustDesk clients use it to log in.
 # Path routes have a higher priority than the host-only route, so the
@@ -60,6 +62,22 @@ def run(action, payload):
 
 
 run('set-route', {**base_route, 'instance': module_id})
+
+# Browser client: Traefik terminates TLS and forwards the websocket to
+# hbbs/hbbr, which listen on the host network.
+web_client = data.get("web_client", False)
+for suffix, path, port in (("wsid", "/ws/id", 21118), ("wsrelay", "/ws/relay", 21119)):
+    instance = f"{module_id}-{suffix}"
+    if web_client:
+        run('set-route', {
+            **base_route,
+            'instance': instance,
+            'url': f'http://127.0.0.1:{port}',
+            'path': path,
+            'strip_prefix': True,
+        })
+    else:
+        run('delete-route', {'instance': instance})
 
 for suffix, path in (("admin", "/_admin"), ("adminapi", "/api/admin")):
     instance = f"{module_id}-{suffix}"

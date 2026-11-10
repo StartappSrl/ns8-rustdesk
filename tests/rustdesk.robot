@@ -30,7 +30,7 @@ Check if rustdesk is installed correctly
     Set Global Variable    ${module_id}    ${output.module_id}
 
 Check if rustdesk can be configured
-    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host": "rustdesk.test.local", "lets_encrypt": false, "http2https": false, "ban_threshold": 5, "log_retention_days": 180, "admin_allowlist": ["127.0.0.1"]}'
+    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host": "rustdesk.test.local", "lets_encrypt": false, "http2https": false, "ban_threshold": 5, "log_retention_days": 180, "admin_allowlist": ["127.0.0.1"], "web_client": true}'
     ...    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}  0
 
@@ -60,6 +60,17 @@ Check if the web console answers
     ${rc} =    Execute Command    curl -fsk -H 'Host: rustdesk.test.local' https://127.0.0.1/_admin/
     ...    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}  0
+
+Check if the browser client is served
+    ${rc} =    Execute Command    curl -fsk -H 'Host: rustdesk.test.local' https://127.0.0.1/webclient/
+    ...    return_rc=True  return_stdout=False
+    Should Be Equal As Integers    ${rc}  0
+
+Check if the websocket routes reach hbbs and hbbr
+    FOR    ${path}    IN    /ws/id    /ws/relay
+        ${output} =    Execute Command    curl -sk --http1.1 -o /dev/null -w '\%{http_code}' -H 'Host: rustdesk.test.local' -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Version: 13' -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' --max-time 3 https://127.0.0.1${path}
+        Should Be Equal    ${output}    101
+    END
 
 Take screenshots
     [Tags]    ui

@@ -30,8 +30,7 @@ agent.set_env("RUSTDESK_BAN_THRESHOLD", str(data.get("ban_threshold", 5)))
 agent.set_env("RUSTDESK_LOG_RETENTION_DAYS", str(data.get("log_retention_days", 180)))
 agent.set_env("RUSTDESK_ADMIN_ALLOWLIST", ",".join(allowlist))
 
-# Websocket ports are needed only by the browser client
+# The browser client reaches the websocket ports 21118/21119 through
+# Traefik on port 443 (see 30traefik): they stay closed in the firewall.
 ports = ["21115/tcp", "21116/tcp", "21116/udp", "21117/tcp"]
-if web_client:
-    ports += ["21118/tcp", "21119/tcp"]
 agent.add_public_service(os.environ['MODULE_ID'], ports, replace_ports=True)

@@ -2,17 +2,21 @@
 # Copyright (C) 2026 ns8-rustdesk contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# rustdesk-api with the web console translated into Italian.
+# rustdesk-api with the web console translated into Italian and the browser
+# client routed through HTTPS.
 #
 # The upstream image is reused as is; only the admin console (rebuilt from
-# rustdesk-api-web with the Italian language added), the server messages
-# and the welcome page are replaced.
+# rustdesk-api-web with the Italian language added), the browser client
+# connection URLs, the server messages and the welcome page are replaced.
 #
 
 # Commit of lejianwen/rustdesk-api-web bundled in rustdesk-api v2.7.
-# When updating the base image below, update this commit too.
+# When updating the upstream image below, update this commit too.
 ARG RUSTDESK_API_WEB_COMMIT=3998c2a9213fcd047252776d0f0db33e6717026c
 
+FROM docker.io/lejianwen/rustdesk-api:v2.7 AS upstream
+
+# Admin console with the Italian language
 FROM docker.io/library/node:20.20.2-bookworm AS web
 ARG RUSTDESK_API_WEB_COMMIT
 WORKDIR /src
@@ -26,12 +30,19 @@ RUN sh /usr/local/bin/patch-italian.sh /src \
     && npm install --no-audit --no-fund \
     && npm run build
 
-FROM docker.io/lejianwen/rustdesk-api:v2.7
+# Browser client connecting through wss://<host>/ws/{id,relay}
+FROM docker.io/library/node:20.20.2-bookworm AS webclient
+COPY --from=upstream /app/resources/web /webclient
+COPY patch-webclient.sh /usr/local/bin/patch-webclient.sh
+RUN sh /usr/local/bin/patch-webclient.sh /webclient
+
+FROM upstream
 # sqlite3 is used by the nightly log retention (imageroot/bin/purge-logs).
 # apk upgrade applies the Alpine security fixes released after upstream
 # built its image, which has not been rebuilt since September 2025.
 RUN apk upgrade --no-cache && apk add --no-cache sqlite \
-    && rm -rf /app/resources/admin
+    && rm -rf /app/resources/admin /app/resources/web
 COPY --from=web /src/dist /app/resources/admin
+COPY --from=webclient /webclient /app/resources/web
 COPY it.toml /app/resources/i18n/it.toml
 COPY hello.html /app/conf/admin/hello.html

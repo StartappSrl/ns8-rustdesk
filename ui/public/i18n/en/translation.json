@@ -33,8 +33,8 @@
         "lets_encrypt": "Request Let's Encrypt certificate",
         "http_to_https": "Redirect HTTP to HTTPS",
         "web_client": "Browser client",
-        "web_client_notice_title": "Ports 21118 and 21119 will be opened",
-        "web_client_notice": "The browser client connects with websockets. Browsers block unencrypted websockets from HTTPS pages, so the browser client needs a TLS proxy in front of these ports. See the README.",
+        "web_client_notice_title": "Browser client",
+        "web_client_notice": "Available at https://<host>/webclient/ and from the web console. It connects through HTTPS on port 443, so no other port needs to be opened. Sessions always go through the relay.",
         "client_setup": "Client setup",
         "client_setup_description": "In the RustDesk client, open Settings, then Network, then ID/Relay server and enter these values.",
         "id_server": "ID server",
@@ -53,7 +53,8 @@
         "admin_allowlist": "Web console access allowed from",
         "admin_allowlist_helper": "One IP address or network per line, e.g. 203.0.113.10 or 192.168.1.0/24. Leave empty to allow access from anywhere. RustDesk clients can always log in",
         "invalid_number": "Enter a whole number in the allowed range",
-        "invalid_ip_network": "{value} is not a valid IP address or network"
+        "invalid_ip_network": "{value} is not a valid IP address or network",
+        "open_web_client": "Open browser client"
     },
     "about": {
         "title": "About"
