@@ -8,6 +8,7 @@
 import os
 import sys
 import json
+import ipaddress
 import agent
 
 data = json.load(sys.stdin)
@@ -17,12 +18,17 @@ host = data["host"]
 # the console host name, for example a public IP or a DNS-only name.
 rustdesk_host = data.get("rustdesk_host") or host
 web_client = data.get("web_client", False)
+# Normalize "192.168.1.10" to "192.168.1.10/32"
+allowlist = [str(ipaddress.ip_network(e, strict=False)) for e in data.get("admin_allowlist", [])]
 
 agent.set_env("TRAEFIK_HOST", host)
 agent.set_env("TRAEFIK_HTTP2HTTPS", data.get("http2https", True))
 agent.set_env("TRAEFIK_LETS_ENCRYPT", data.get("lets_encrypt", True))
 agent.set_env("RUSTDESK_HOST", rustdesk_host)
 agent.set_env("RUSTDESK_WEB_CLIENT", "1" if web_client else "0")
+agent.set_env("RUSTDESK_BAN_THRESHOLD", str(data.get("ban_threshold", 5)))
+agent.set_env("RUSTDESK_LOG_RETENTION_DAYS", str(data.get("log_retention_days", 180)))
+agent.set_env("RUSTDESK_ADMIN_ALLOWLIST", ",".join(allowlist))
 
 # Websocket ports are needed only by the browser client
 ports = ["21115/tcp", "21116/tcp", "21116/udp", "21117/tcp"]

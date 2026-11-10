@@ -44,7 +44,16 @@
         "key_not_ready": "The key is generated when the ID server starts for the first time. Reload this page in a few seconds.",
         "open_console": "Open web console",
         "not_configured": "Save the settings to start the RustDesk server. The values for the clients will appear here.",
-        "domain_already_used_in_traefik": "This host name is already used by another application"
+        "domain_already_used_in_traefik": "This host name is already used by another application",
+        "security": "Security",
+        "ban_threshold": "Failed logins before IP block",
+        "ban_threshold_helper": "After this many failed logins within 5 minutes, the IP address is blocked for 30 minutes. 0 disables the block",
+        "log_retention_days": "Log retention (days)",
+        "log_retention_days_helper": "Login, connection and file transfer logs older than this are deleted every night. 0 keeps them forever",
+        "admin_allowlist": "Web console access allowed from",
+        "admin_allowlist_helper": "One IP address or network per line, e.g. 203.0.113.10 or 192.168.1.0/24. Leave empty to allow access from anywhere. RustDesk clients can always log in",
+        "invalid_number": "Enter a whole number in the allowed range",
+        "invalid_ip_network": "{value} is not a valid IP address or network"
     },
     "about": {
         "title": "About"

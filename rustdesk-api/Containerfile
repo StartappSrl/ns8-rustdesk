@@ -27,7 +27,11 @@ RUN sh /usr/local/bin/patch-italian.sh /src \
     && npm run build
 
 FROM docker.io/lejianwen/rustdesk-api:v2.7
-RUN rm -rf /app/resources/admin
+# sqlite3 is used by the nightly log retention (imageroot/bin/purge-logs).
+# apk upgrade applies the Alpine security fixes released after upstream
+# built its image, which has not been rebuilt since September 2025.
+RUN apk upgrade --no-cache && apk add --no-cache sqlite \
+    && rm -rf /app/resources/admin
 COPY --from=web /src/dist /app/resources/admin
 COPY it.toml /app/resources/i18n/it.toml
 COPY hello.html /app/conf/admin/hello.html

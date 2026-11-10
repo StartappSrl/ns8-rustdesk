@@ -6,7 +6,7 @@
 #
 [Unit]
 Description=RustDesk API and web console
-After=hbbs.service
+After=hbbs.service hbbr.service
 Wants=hbbs.service
 
 [Service]
@@ -28,6 +28,10 @@ ExecStart=/usr/bin/podman run \
     --env=RUSTDESK_API_LANG=it \
     "--env=RUSTDESK_API_ADMIN_TITLE=Console RustDesk" \
     --env=RUSTDESK_API_APP_WEB_CLIENT=${RUSTDESK_WEB_CLIENT} \
+    --env=RUSTDESK_API_APP_REGISTER=false \
+    --env=RUSTDESK_API_APP_SHOW_SWAGGER=0 \
+    --env=RUSTDESK_API_APP_CAPTCHA_THRESHOLD=3 \
+    --env=RUSTDESK_API_APP_BAN_THRESHOLD=${RUSTDESK_BAN_THRESHOLD} \
     --env=RUSTDESK_API_RUSTDESK_ID_SERVER=${RUSTDESK_HOST}:21116 \
     --env=RUSTDESK_API_RUSTDESK_RELAY_SERVER=${RUSTDESK_HOST}:21117 \
     --env=RUSTDESK_API_RUSTDESK_API_SERVER=https://${TRAEFIK_HOST} \

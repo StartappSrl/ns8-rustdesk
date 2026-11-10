@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Delete login, connection and file transfer logs older than
+# RUSTDESK_LOG_RETENTION_DAYS from the web console database.
+# 0 keeps the logs forever.
+
+set -e
+exec 1>&2
+
+days="${RUSTDESK_LOG_RETENTION_DAYS:-0}"
+if ! [[ "${days}" =~ ^[0-9]+$ ]] || [[ "${days}" -eq 0 ]]; then
+    echo "Log retention disabled, nothing to purge"
+    exit 0
+fi
+
+# Timestamps are stored as "YYYY-MM-DD HH:MM:SS.fffffffff+ZZ:ZZ": compare
+# the first 19 characters with the cutoff date.
+cutoff="strftime('%Y-%m-%d %H:%M:%S', 'now', '-${days} days')"
+where="replace(substr(created_at, 1, 19), 'T', ' ') < ${cutoff}"
+
+podman exec rustdesk-api sqlite3 -cmd ".timeout 10000" /app/data/rustdeskapi.db "
+DELETE FROM login_logs  WHERE ${where};
+DELETE FROM audit_conns WHERE ${where};
+DELETE FROM audit_files WHERE ${where};
+SELECT 'Purged logs older than ${days} days: ' || total_changes() || ' rows';
+"

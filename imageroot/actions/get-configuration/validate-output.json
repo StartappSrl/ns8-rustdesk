@@ -10,17 +10,57 @@
             "lets_encrypt": true,
             "http2https": true,
             "web_client": false,
-            "public_key": "kXq2V8...="
+            "public_key": "kXq2V8...=",
+            "ban_threshold": 5,
+            "log_retention_days": 180,
+            "admin_allowlist": [
+                "192.168.1.0/24"
+            ]
         }
     ],
     "type": "object",
-    "required": ["host", "rustdesk_host", "lets_encrypt", "http2https", "web_client", "public_key"],
+    "required": [
+        "host",
+        "rustdesk_host",
+        "lets_encrypt",
+        "http2https",
+        "web_client",
+        "public_key",
+        "ban_threshold",
+        "log_retention_days",
+        "admin_allowlist"
+    ],
     "properties": {
-        "host": {"type": "string"},
-        "rustdesk_host": {"type": "string"},
-        "lets_encrypt": {"type": "boolean"},
-        "http2https": {"type": "boolean"},
-        "web_client": {"type": "boolean"},
-        "public_key": {"type": "string", "description": "hbbs public key, empty until hbbs starts for the first time"}
+        "host": {
+            "type": "string"
+        },
+        "rustdesk_host": {
+            "type": "string"
+        },
+        "lets_encrypt": {
+            "type": "boolean"
+        },
+        "http2https": {
+            "type": "boolean"
+        },
+        "web_client": {
+            "type": "boolean"
+        },
+        "public_key": {
+            "type": "string",
+            "description": "hbbs public key, empty until hbbs starts for the first time"
+        },
+        "ban_threshold": {
+            "type": "integer"
+        },
+        "log_retention_days": {
+            "type": "integer"
+        },
+        "admin_allowlist": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        }
     }
 }

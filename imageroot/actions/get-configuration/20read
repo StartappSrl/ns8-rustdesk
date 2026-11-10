@@ -33,6 +33,9 @@ config = {
     "lets_encrypt": os.getenv("TRAEFIK_LETS_ENCRYPT", "True") == "True",
     "http2https": os.getenv("TRAEFIK_HTTP2HTTPS", "True") == "True",
     "web_client": os.getenv("RUSTDESK_WEB_CLIENT", "0") == "1",
+    "ban_threshold": int(os.getenv("RUSTDESK_BAN_THRESHOLD", "5")),
+    "log_retention_days": int(os.getenv("RUSTDESK_LOG_RETENTION_DAYS", "180")),
+    "admin_allowlist": [e for e in os.getenv("RUSTDESK_ADMIN_ALLOWLIST", "").split(",") if e],
     "public_key": public_key,
 }
 

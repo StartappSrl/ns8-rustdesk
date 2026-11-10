@@ -85,6 +85,43 @@
                 $t("settings.enabled")
               }}</template>
             </cv-toggle>
+            <h4 class="mg-bottom section-title">
+              {{ $t("settings.security") }}
+            </h4>
+            <cv-text-input
+              type="number"
+              min="0"
+              max="100"
+              :label="$t('settings.ban_threshold')"
+              :helper-text="$t('settings.ban_threshold_helper')"
+              v-model.number="banThreshold"
+              class="mg-bottom narrow"
+              :invalid-message="$t(error.ban_threshold)"
+              :disabled="loading.getConfiguration || loading.configureModule"
+              ref="ban_threshold"
+            />
+            <cv-text-input
+              type="number"
+              min="0"
+              max="3650"
+              :label="$t('settings.log_retention_days')"
+              :helper-text="$t('settings.log_retention_days_helper')"
+              v-model.number="logRetentionDays"
+              class="mg-bottom narrow"
+              :invalid-message="$t(error.log_retention_days)"
+              :disabled="loading.getConfiguration || loading.configureModule"
+              ref="log_retention_days"
+            />
+            <cv-text-area
+              :label="$t('settings.admin_allowlist')"
+              :helper-text="$t('settings.admin_allowlist_helper')"
+              placeholder="203.0.113.10&#10;192.168.1.0/24"
+              v-model="adminAllowlist"
+              class="mg-bottom"
+              :invalid-message="adminAllowlistError"
+              :disabled="loading.getConfiguration || loading.configureModule"
+              ref="admin_allowlist"
+            />
             <NsInlineNotification
               v-if="isWebClientEnabled"
               kind="info"
@@ -182,6 +219,9 @@ export default {
       isLetsEncryptEnabled: true,
       isHttpToHttpsEnabled: true,
       isWebClientEnabled: false,
+      banThreshold: 5,
+      logRetentionDays: 180,
+      adminAllowlist: "",
       // values currently applied on the server
       savedHost: "",
       savedRustdeskHost: "",
@@ -195,11 +235,29 @@ export default {
         configureModule: "",
         host: "",
         rustdesk_host: "",
+        ban_threshold: "",
+        log_retention_days: "",
+        admin_allowlist: "",
+        admin_allowlist_value: "",
       },
     };
   },
   computed: {
     ...mapState(["instanceName", "core", "appName"]),
+    adminAllowlistError() {
+      if (!this.error.admin_allowlist) {
+        return "";
+      }
+      return this.$t(this.error.admin_allowlist, {
+        value: this.error.admin_allowlist_value,
+      });
+    },
+    adminAllowlistEntries() {
+      return this.adminAllowlist
+        .split(/[\s,]+/)
+        .map((entry) => entry.trim())
+        .filter((entry) => entry);
+    },
     apiUrl() {
       return `https://${this.savedHost}`;
     },
@@ -270,6 +328,9 @@ export default {
       this.isLetsEncryptEnabled = config.lets_encrypt;
       this.isHttpToHttpsEnabled = config.http2https;
       this.isWebClientEnabled = config.web_client;
+      this.banThreshold = config.ban_threshold;
+      this.logRetentionDays = config.log_retention_days;
+      this.adminAllowlist = config.admin_allowlist.join("\n");
       this.savedHost = config.host;
       this.savedRustdeskHost = config.rustdesk_host;
       this.publicKey = config.public_key;
@@ -285,6 +346,20 @@ export default {
         this.focusElement("host");
         isValidationOk = false;
       }
+      for (const [field, max] of [
+        ["ban_threshold", 100],
+        ["log_retention_days", 3650],
+      ]) {
+        const value =
+          field === "ban_threshold" ? this.banThreshold : this.logRetentionDays;
+        if (!Number.isInteger(value) || value < 0 || value > max) {
+          this.error[field] = "settings.invalid_number";
+          if (isValidationOk) {
+            this.focusElement(field);
+          }
+          isValidationOk = false;
+        }
+      }
       return isValidationOk;
     },
     configureModuleValidationFailed(validationErrors) {
@@ -296,6 +371,9 @@ export default {
 
         if (field !== "(root)") {
           this.error[field] = "settings." + validationError.error;
+          if (field === "admin_allowlist") {
+            this.error.admin_allowlist_value = validationError.value;
+          }
 
           if (!focusAlreadySet) {
             this.focusElement(field);
@@ -335,6 +413,9 @@ export default {
             lets_encrypt: this.isLetsEncryptEnabled,
             http2https: this.isHttpToHttpsEnabled,
             web_client: this.isWebClientEnabled,
+            ban_threshold: this.banThreshold,
+            log_retention_days: this.logRetentionDays,
+            admin_allowlist: this.adminAllowlistEntries,
           },
           extra: {
             title: this.$t("settings.configure_instance", {
@@ -372,6 +453,14 @@ export default {
 
 .mg-bottom {
   margin-bottom: $spacing-06;
+}
+
+.section-title {
+  margin-top: $spacing-07;
+}
+
+.narrow {
+  max-width: 16rem;
 }
 
 .client-field {

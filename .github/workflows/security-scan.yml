@@ -1,0 +1,24 @@
+name: "Weekly security scan"
+
+# Scan the published images every week, not only at release time: new
+# vulnerabilities are found in software that has not changed. Results are
+# in the repository Security tab (Code scanning).
+
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+  security-events: write
+
+jobs:
+  module:
+    uses: NethServer/ns8-github-actions/.github/workflows/module-info.yml@v1
+  trivy:
+    needs: module
+    uses: NethServer/ns8-github-actions/.github/workflows/scan-with-trivy.yml@v1
+    with:
+      images: ${{ needs.module.outputs.images }}

@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Re-apply the configuration after an update, so new settings get their
+# defaults and Traefik routes, units and timers are refreshed.
+# Skip instances that were never configured.
+
+import os
+import sys
+import agent
+import agent.tasks
+
+if not os.environ.get("TRAEFIK_HOST"):
+    print("Module not configured yet: nothing to re-apply", file=sys.stderr)
+    sys.exit(0)
+
+response = agent.tasks.run(
+    agent_id=os.environ['AGENT_ID'],
+    action='configure-module',
+    data={
+        "host": os.environ["TRAEFIK_HOST"],
+        "rustdesk_host": os.environ.get("RUSTDESK_HOST", os.environ["TRAEFIK_HOST"]),
+        "lets_encrypt": os.environ.get("TRAEFIK_LETS_ENCRYPT") == "True",
+        "http2https": os.environ.get("TRAEFIK_HTTP2HTTPS") == "True",
+        "web_client": os.environ.get("RUSTDESK_WEB_CLIENT") == "1",
+        "ban_threshold": int(os.environ.get("RUSTDESK_BAN_THRESHOLD", "5")),
+        "log_retention_days": int(os.environ.get("RUSTDESK_LOG_RETENTION_DAYS", "180")),
+        "admin_allowlist": [e for e in os.environ.get("RUSTDESK_ADMIN_ALLOWLIST", "").split(",") if e],
+    },
+)
+agent.assert_exp(response['exit_code'] == 0, "The configure-module subtask failed!")

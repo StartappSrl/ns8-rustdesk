@@ -9,11 +9,21 @@
             "rustdesk_host": "rustdesk.example.org",
             "lets_encrypt": true,
             "http2https": true,
-            "web_client": false
+            "web_client": false,
+            "ban_threshold": 5,
+            "log_retention_days": 180,
+            "admin_allowlist": [
+                "203.0.113.10",
+                "192.168.1.0/24"
+            ]
         }
     ],
     "type": "object",
-    "required": ["host", "lets_encrypt", "http2https"],
+    "required": [
+        "host",
+        "lets_encrypt",
+        "http2https"
+    ],
     "properties": {
         "host": {
             "type": "string",
@@ -37,6 +47,27 @@
         "web_client": {
             "type": "boolean",
             "description": "Enable the browser client and open the websocket ports 21118 and 21119"
+        },
+        "ban_threshold": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Failed logins within 5 minutes after which the client IP is blocked for 30 minutes. 0 disables the block"
+        },
+        "log_retention_days": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3650,
+            "description": "Days to keep login, connection and file transfer logs. 0 keeps them forever"
+        },
+        "admin_allowlist": {
+            "type": "array",
+            "maxItems": 50,
+            "items": {
+                "type": "string",
+                "maxLength": 43
+            },
+            "description": "IP addresses or CIDR networks allowed to open the web console. Empty allows everyone"
         }
     }
 }

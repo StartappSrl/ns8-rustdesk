@@ -63,6 +63,9 @@ comando:
 | `lets_encrypt` | Richiede un certificato Let's Encrypt per `host` |
 | `http2https` | Reindirizza HTTP su HTTPS |
 | `web_client` | Abilita il client da browser e apre le porte 21118 e 21119 (vedi sotto) |
+| `ban_threshold` | Accessi falliti in 5 minuti prima di bloccare l'IP per 30 minuti. Default `5`, `0` disattiva |
+| `log_retention_days` | Giorni di conservazione dei log di accessi, connessioni e file. Default `180`, `0` per sempre |
+| `admin_allowlist` | IP o reti (CIDR) da cui si può aprire la console web. Vuoto: da ovunque |
 
 Il DNS di `host` deve puntare al nodo. Se il nodo è dietro NAT, inoltra sul
 router le porte 21115-21117/tcp e 21116/udp.
@@ -101,6 +104,72 @@ si apre ma non si connette. Serve un proxy TLS (`wss://`) davanti a queste
 porte, da impostare poi in `RUSTDESK_API_RUSTDESK_WS_HOST`. Questa parte non è
 ancora automatizzata nel modulo: è il candidato naturale per una prossima
 release.
+
+## Sicurezza
+
+### Cosa fa il modulo
+
+- **Chiave obbligatoria su ID server e relay.** hbbs e hbbr rifiutano i
+  client che non hanno la chiave pubblica del server. hbbr è avviato con
+  `-k _`: senza questa opzione il relay accetterebbe chiunque.
+- **Sessioni cifrate end-to-end** tra i client: il relay inoltra i dati ma
+  non può leggerli.
+- **Console solo in HTTPS**, tramite Traefik e Let's Encrypt. Il container
+  ascolta solo su `127.0.0.1`.
+- **Header di sicurezza** su ogni risposta: HSTS (con il redirect HTTPS
+  attivo), `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`.
+- **Protezione dai tentativi di accesso**: captcha dopo 3 errori, blocco
+  dell'IP per 30 minuti dopo `ban_threshold` errori. Vale sia per la console
+  sia per il login dai client.
+- **Console limitabile per IP** (`admin_allowlist`): si applica a `/_admin` e
+  alle API di amministrazione `/api/admin`. Le API usate dai client restano
+  raggiungibili, altrimenti i tecnici fuori ufficio non potrebbero fare login.
+- **Registrazioni chiuse** e documentazione Swagger nascosta.
+- **Conservazione dei log** (`log_retention_days`): ogni notte il timer
+  `purge-logs.timer` cancella i log più vecchi del limite.
+- **Container rootless** sotto l'utente dedicato del modulo; firewall con le
+  sole porte indispensabili.
+- **Immagini aggiornate**: l'immagine della console applica gli
+  aggiornamenti di sicurezza di Alpine a ogni build; Renovate segnala le
+  nuove versioni; il workflow `security-scan.yml` analizza ogni settimana le
+  immagini pubblicate con Trivy (risultati in **Security → Code scanning**).
+
+### Cosa devi fare tu
+
+1. **Cambia la password di `admin`** al primo accesso. La password iniziale
+   resta scritta nel journal: una volta cambiata non è più valida.
+2. **Imposta `admin_allowlist`** con gli IP dell'ufficio o della VPN, se la
+   console la usate solo da lì.
+3. **Proteggi i computer assistiti** dalle impostazioni di sicurezza del
+   client RustDesk:
+   - per l'assistenza occasionale, lascia che sia l'utente ad accettare la
+     connessione con un clic, senza password permanente;
+   - per l'accesso non presidiato, usa una password permanente lunga e
+     diversa per ogni macchina e attiva l'autenticazione a due fattori;
+   - concedi solo i permessi necessari (ad esempio niente trasferimento file
+     o terminale se non servono).
+4. **Aggiorna regolarmente** il modulo e controlla gli avvisi di Renovate e
+   della scansione settimanale.
+5. **Privacy**: i log contengono IP, utenti e orari delle connessioni, cioè
+   dati personali. Indica nell'informativa che li raccogli e per quanto tempo
+   (`log_retention_days`).
+
+### Limiti noti
+
+- **Uso del relay da parte di terzi.** La chiave è pubblica per natura (è
+  anche nel nome dell'installer che distribuisci): chi la conosce può usare
+  il server per le proprie connessioni. hbbr limita la banda (32 Mb/s per
+  connessione, 1 Gb/s in totale). Il fork `lejianwen/rustdesk-server`
+  offre `MUST_LOGIN` per accettare solo utenti autenticati, ma è basato su
+  una versione più vecchia del server e non è aggiornato da settembre 2025:
+  il modulo resta sul server ufficiale, che riceve le correzioni di
+  sicurezza.
+- **rustdesk-api non è più sviluppato attivamente** (ultimo commit a
+  settembre 2025). Il modulo mitiga il rischio con gli aggiornamenti di
+  Alpine, la scansione settimanale e la possibilità di limitare la console
+  per IP. Se la scansione segnala una vulnerabilità grave non corretta,
+  valuta la migrazione a un'alternativa mantenuta (ad esempio CortenDesk,
+  che importa i dati di rustdesk-api).
 
 ## Backup e ripristino
 
@@ -144,7 +213,8 @@ La rimozione cancella anche la rotta Traefik e chiude le porte nel firewall.
       actions/get-configuration/     lettura configurazione e chiave pubblica
       actions/destroy-module/        rimozione rotta e regole firewall
       actions/restore-module/        ripristino da backup
-      bin/wait-key                   attende la chiave di hbbs prima di avviare l'API
+      bin/wait-key                   attende le chiavi di hbbs prima di avviare hbbr e l'API
+      bin/purge-logs                 cancella i log oltre il periodo di conservazione
       etc/state-include.conf         cosa finisce nel backup
       systemd/user/*.service         unit dei tre container
       update-module.d/               hook eseguiti dopo update-module

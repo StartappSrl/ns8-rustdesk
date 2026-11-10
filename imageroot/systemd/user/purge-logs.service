@@ -1,0 +1,13 @@
+#
+# Delete old login, connection and file transfer logs (data retention)
+#
+[Unit]
+Description=RustDesk log retention
+After=rustdesk-api.service
+Requisite=rustdesk-api.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=%E/state/environment
+WorkingDirectory=%E/state
+ExecStart=/usr/local/bin/runagent purge-logs

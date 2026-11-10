@@ -26,6 +26,9 @@ response = agent.tasks.run(
         "lets_encrypt": renv.get("TRAEFIK_LETS_ENCRYPT") == "True",
         "http2https": renv.get("TRAEFIK_HTTP2HTTPS") == "True",
         "web_client": renv.get("RUSTDESK_WEB_CLIENT") == "1",
+        "ban_threshold": int(renv.get("RUSTDESK_BAN_THRESHOLD", "5")),
+        "log_retention_days": int(renv.get("RUSTDESK_LOG_RETENTION_DAYS", "180")),
+        "admin_allowlist": [e for e in renv.get("RUSTDESK_ADMIN_ALLOWLIST", "").split(",") if e],
     },
 )
 agent.assert_exp(response['exit_code'] == 0, "The configure-module subtask failed!")

@@ -3,8 +3,15 @@
 #
 # Ports: 21117/tcp (relay), 21119/tcp (websocket, web client only)
 #
+# "-k _" makes hbbr load the key pair created by hbbs and refuse relay
+# requests from clients that do not have the public key. Without it, the
+# relay accepts anyone. hbbr must start after hbbs has written the keys,
+# otherwise it would generate a different key pair.
+#
 [Unit]
 Description=RustDesk relay server (hbbr)
+After=hbbs.service
+Wants=hbbs.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n
@@ -12,6 +19,7 @@ EnvironmentFile=%E/state/environment
 WorkingDirectory=%E/state
 Restart=always
 ExecStartPre=/bin/rm -f %t/hbbr.pid %t/hbbr.ctr-id
+ExecStartPre=/usr/local/bin/runagent wait-key
 ExecStart=/usr/bin/podman run \
     --detach \
     --conmon-pidfile=%t/hbbr.pid \
@@ -20,7 +28,7 @@ ExecStart=/usr/bin/podman run \
     --replace --name=%N \
     --network=host \
     --volume=rustdesk-data:/root:z \
-    ${RUSTDESK_SERVER_IMAGE} hbbr
+    ${RUSTDESK_SERVER_IMAGE} hbbr -k _
 ExecStop=/usr/bin/podman stop --ignore --cidfile %t/hbbr.ctr-id -t 10
 ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/hbbr.ctr-id
 PIDFile=%t/hbbr.pid

@@ -8,6 +8,7 @@
 import os
 import sys
 import json
+import ipaddress
 import agent
 
 agent.set_weight(os.path.basename(__file__), 0)  # Validation step, no progress
@@ -15,13 +16,20 @@ agent.set_weight(os.path.basename(__file__), 0)  # Validation step, no progress
 data = json.load(sys.stdin)
 host = data.get("host")
 
+
+def fail(field, value, error):
+    agent.set_status('validation-failed')
+    json.dump([{'field': field, 'parameter': field, 'value': value, 'error': error}], fp=sys.stdout)
+    sys.exit(2)
+
+
 # The console host name must not be used by another Traefik route
 if host != os.environ.get('TRAEFIK_HOST', '') and agent.http_route_in_use(domain=host):
-    agent.set_status('validation-failed')
-    json.dump([{
-        'field': 'host',
-        'parameter': 'host',
-        'value': host,
-        'error': 'domain_already_used_in_traefik',
-    }], fp=sys.stdout)
-    sys.exit(2)
+    fail('host', host, 'domain_already_used_in_traefik')
+
+# Every allowlist entry must be an IP address or a network in CIDR format
+for entry in data.get("admin_allowlist", []):
+    try:
+        ipaddress.ip_network(entry, strict=False)
+    except ValueError:
+        fail('admin_allowlist', entry, 'invalid_ip_network')

@@ -10,8 +10,10 @@ set -e
 # Redirect any output to the journal (stderr)
 exec 1>&2
 
-# Start in order: relay, ID server (creates the key pair), API/console
-systemctl --user enable hbbr.service hbbs.service rustdesk-api.service
-systemctl --user restart hbbr.service
+# Start in order: ID server (creates the key pair), relay (loads the same
+# key pair), API/console. Then the nightly log retention.
+systemctl --user enable hbbs.service hbbr.service rustdesk-api.service
 systemctl --user restart hbbs.service
+systemctl --user restart hbbr.service
 systemctl --user restart rustdesk-api.service
+systemctl --user enable --now purge-logs.timer

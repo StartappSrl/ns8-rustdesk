@@ -5,29 +5,65 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+#
+# Routes:
+# - MODULE_ID           host -> API server and web console
+# - MODULE_ID-admin     host + /_admin     -> only from the allowlist
+# - MODULE_ID-adminapi  host + /api/admin  -> only from the allowlist
+#
+# The client API (/api/...) stays public: RustDesk clients use it to log in.
+# Path routes have a higher priority than the host-only route, so the
+# allowlist applies to the console even though the main route also matches.
+# Route names start with MODULE_ID: Traefik removes them with the module.
+#
+
 import os
 import sys
 import json
+import ipaddress
 import agent
 import agent.tasks
 
 data = json.load(sys.stdin)
+module_id = os.environ['MODULE_ID']
 
 traefik_id = agent.resolve_agent_id('traefik@node')
 if traefik_id is None:
     sys.exit(2)
 
-# The route "instance" starts with MODULE_ID: it is removed with the module
-response = agent.tasks.run(
-    agent_id=traefik_id,
-    action='set-route',
-    data={
-        'instance': os.environ['MODULE_ID'],
-        'url': f'http://127.0.0.1:{os.environ["TCP_PORT"]}',
-        'host': data["host"],
-        'lets_encrypt': data.get("lets_encrypt", True),
-        'http2https': data.get("http2https", True),
-    },
-)
+lets_encrypt = data.get("lets_encrypt", True)
+http2https = data.get("http2https", True)
+allowlist = [str(ipaddress.ip_network(e, strict=False)) for e in data.get("admin_allowlist", [])]
 
-agent.assert_exp(response['exit_code'] == 0)
+# Security headers for every response
+response_headers = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+}
+if http2https:
+    # Tell browsers to always use HTTPS for this host (one year)
+    response_headers["Strict-Transport-Security"] = "max-age=31536000"
+
+base_route = {
+    'url': f'http://127.0.0.1:{os.environ["TCP_PORT"]}',
+    'host': data["host"],
+    'lets_encrypt': lets_encrypt,
+    'http2https': http2https,
+    'headers': {'response': response_headers},
+}
+
+
+def run(action, payload):
+    response = agent.tasks.run(agent_id=traefik_id, action=action, data=payload)
+    agent.assert_exp(response['exit_code'] == 0, f"Traefik {action} failed for {payload['instance']}")
+
+
+run('set-route', {**base_route, 'instance': module_id})
+
+for suffix, path in (("admin", "/_admin"), ("adminapi", "/api/admin")):
+    instance = f"{module_id}-{suffix}"
+    if allowlist:
+        run('set-route', {**base_route, 'instance': instance, 'path': path, 'ip_allowlist': allowlist})
+    else:
+        run('delete-route', {'instance': instance})

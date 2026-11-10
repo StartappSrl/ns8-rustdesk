@@ -9,7 +9,6 @@
 #
 [Unit]
 Description=RustDesk ID server (hbbs)
-After=hbbr.service
 
 [Service]
 Environment=PODMAN_SYSTEMD_UNIT=%n

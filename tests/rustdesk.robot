@@ -30,7 +30,7 @@ Check if rustdesk is installed correctly
     Set Global Variable    ${module_id}    ${output.module_id}
 
 Check if rustdesk can be configured
-    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host": "rustdesk.test.local", "lets_encrypt": false, "http2https": false}'
+    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host": "rustdesk.test.local", "lets_encrypt": false, "http2https": false, "ban_threshold": 5, "log_retention_days": 180, "admin_allowlist": ["127.0.0.1"]}'
     ...    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}  0
 
@@ -44,6 +44,17 @@ Check if the public key is returned
     Should Be Equal As Integers    ${rc}  0
     &{config} =    Evaluate    json.loads('''${output}''')    json
     Should Not Be Empty    ${config.public_key}
+
+Check if the relay enforces the key
+    ${output}  ${rc} =    Execute Command    runagent -m ${module_id} podman inspect hbbr --format '{{.Config.Cmd}}'
+    ...    return_rc=True
+    Should Be Equal As Integers    ${rc}  0
+    Should Contain    ${output}    -k
+
+Check if the log retention timer is active
+    ${rc} =    Execute Command    runagent -m ${module_id} systemctl --user is-active purge-logs.timer
+    ...    return_rc=True  return_stdout=False
+    Should Be Equal As Integers    ${rc}  0
 
 Check if the web console answers
     ${rc} =    Execute Command    curl -fsk -H 'Host: rustdesk.test.local' https://127.0.0.1/_admin/
