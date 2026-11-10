@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
+# Restart if running, ignore if stopped
+systemctl --user try-restart hbbr.service hbbs.service rustdesk-api.service

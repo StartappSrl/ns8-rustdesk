@@ -1,0 +1,42 @@
+#
+# RustDesk API server + web console (lejianwen/rustdesk-api)
+#
+# It listens only on 127.0.0.1:TCP_PORT; Traefik publishes it with HTTPS.
+# The hbbs public key is read from the shared rustdesk-data volume.
+#
+[Unit]
+Description=RustDesk API and web console
+After=hbbs.service
+Wants=hbbs.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%E/state/environment
+WorkingDirectory=%E/state
+Restart=always
+ExecStartPre=/bin/rm -f %t/rustdesk-api.pid %t/rustdesk-api.ctr-id
+ExecStartPre=/usr/local/bin/runagent wait-key
+ExecStart=/usr/bin/podman run \
+    --detach \
+    --conmon-pidfile=%t/rustdesk-api.pid \
+    --cidfile=%t/rustdesk-api.ctr-id \
+    --cgroups=no-conmon \
+    --replace --name=%N \
+    --publish=127.0.0.1:${TCP_PORT}:21114 \
+    --volume=rustdesk-api-data:/app/data:z \
+    --volume=rustdesk-data:/keys:ro,z \
+    --env=RUSTDESK_API_LANG=en \
+    --env=RUSTDESK_API_ADMIN_TITLE=RustDesk \
+    --env=RUSTDESK_API_APP_WEB_CLIENT=${RUSTDESK_WEB_CLIENT} \
+    --env=RUSTDESK_API_RUSTDESK_ID_SERVER=${RUSTDESK_HOST}:21116 \
+    --env=RUSTDESK_API_RUSTDESK_RELAY_SERVER=${RUSTDESK_HOST}:21117 \
+    --env=RUSTDESK_API_RUSTDESK_API_SERVER=https://${TRAEFIK_HOST} \
+    --env=RUSTDESK_API_RUSTDESK_KEY_FILE=/keys/id_ed25519.pub \
+    ${RUSTDESK_API_IMAGE}
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/rustdesk-api.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/rustdesk-api.ctr-id
+PIDFile=%t/rustdesk-api.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

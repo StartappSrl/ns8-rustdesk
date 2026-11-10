@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+set -e
+
+# Redirect any output to the journal (stderr)
+exec 1>&2
+
+# Start in order: relay, ID server (creates the key pair), API/console
+systemctl --user enable hbbr.service hbbs.service rustdesk-api.service
+systemctl --user restart hbbr.service
+systemctl --user restart hbbs.service
+systemctl --user restart rustdesk-api.service

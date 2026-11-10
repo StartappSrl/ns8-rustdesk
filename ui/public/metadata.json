@@ -1,0 +1,22 @@
+{
+  "name": "RustDesk",
+  "description": {
+    "en": "Self-hosted RustDesk remote desktop server (hbbs/hbbr) with a web console",
+    "it": "Server RustDesk self-hosted per il desktop remoto (hbbs/hbbr) con console web"
+  },
+  "categories": [
+    "collaboration"
+  ],
+  "authors": [
+    {
+      "name": "Startapp Srl",
+      "email": "assistenza@startappitalia.it"
+    }
+  ],
+  "docs": {
+    "documentation_url": "https://github.com/startappsrl/ns8-rustdesk",
+    "bug_url": "https://github.com/startappsrl/ns8-rustdesk/issues",
+    "code_url": "https://github.com/startappsrl/ns8-rustdesk"
+  },
+  "source": "ghcr.io/startappsrl/rustdesk"
+}

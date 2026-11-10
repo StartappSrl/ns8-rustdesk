@@ -1,0 +1,35 @@
+#
+# RustDesk ID/rendezvous server (hbbs)
+#
+# Host network is required: hbbs must see the real client addresses
+# for NAT traversal and direct (P2P) connections.
+#
+# Ports: 21115/tcp (NAT test), 21116/tcp+udp (ID/rendezvous),
+#        21118/tcp (websocket, web client only)
+#
+[Unit]
+Description=RustDesk ID server (hbbs)
+After=hbbr.service
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+EnvironmentFile=%E/state/environment
+WorkingDirectory=%E/state
+Restart=always
+ExecStartPre=/bin/rm -f %t/hbbs.pid %t/hbbs.ctr-id
+ExecStart=/usr/bin/podman run \
+    --detach \
+    --conmon-pidfile=%t/hbbs.pid \
+    --cidfile=%t/hbbs.ctr-id \
+    --cgroups=no-conmon \
+    --replace --name=%N \
+    --network=host \
+    --volume=rustdesk-data:/root:z \
+    ${RUSTDESK_SERVER_IMAGE} hbbs -r ${RUSTDESK_HOST}:21117
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/hbbs.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/hbbs.ctr-id
+PIDFile=%t/hbbs.pid
+Type=forking
+
+[Install]
+WantedBy=default.target

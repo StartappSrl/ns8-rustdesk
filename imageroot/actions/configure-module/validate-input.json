@@ -1,0 +1,42 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "configure-module input",
+    "$id": "http://schema.nethserver.org/rustdesk/configure-module-input.json",
+    "description": "Configure the RustDesk server and its web console",
+    "examples": [
+        {
+            "host": "rustdesk.example.org",
+            "rustdesk_host": "rustdesk.example.org",
+            "lets_encrypt": true,
+            "http2https": true,
+            "web_client": false
+        }
+    ],
+    "type": "object",
+    "required": ["host", "lets_encrypt", "http2https"],
+    "properties": {
+        "host": {
+            "type": "string",
+            "description": "Fully qualified domain name of the web console",
+            "format": "hostname",
+            "pattern": "\\."
+        },
+        "rustdesk_host": {
+            "type": "string",
+            "description": "Host name or IP address that RustDesk clients use for the ID and relay servers. Defaults to host",
+            "maxLength": 253
+        },
+        "lets_encrypt": {
+            "type": "boolean",
+            "description": "Request a Let's Encrypt certificate for the web console"
+        },
+        "http2https": {
+            "type": "boolean",
+            "description": "Redirect HTTP requests to HTTPS"
+        },
+        "web_client": {
+            "type": "boolean",
+            "description": "Enable the browser client and open the websocket ports 21118 and 21119"
+        }
+    }
+}

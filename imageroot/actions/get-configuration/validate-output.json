@@ -1,0 +1,26 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "get-configuration output",
+    "$id": "http://schema.nethserver.org/rustdesk/get-configuration-output.json",
+    "description": "Get the RustDesk configuration",
+    "examples": [
+        {
+            "host": "rustdesk.example.org",
+            "rustdesk_host": "rustdesk.example.org",
+            "lets_encrypt": true,
+            "http2https": true,
+            "web_client": false,
+            "public_key": "kXq2V8...="
+        }
+    ],
+    "type": "object",
+    "required": ["host", "rustdesk_host", "lets_encrypt", "http2https", "web_client", "public_key"],
+    "properties": {
+        "host": {"type": "string"},
+        "rustdesk_host": {"type": "string"},
+        "lets_encrypt": {"type": "boolean"},
+        "http2https": {"type": "boolean"},
+        "web_client": {"type": "boolean"},
+        "public_key": {"type": "string", "description": "hbbs public key, empty until hbbs starts for the first time"}
+    }
+}

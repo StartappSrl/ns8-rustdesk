@@ -1,0 +1,23 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "regexManagers": [
+    {
+      "fileMatch": ["build-images.sh"],
+      "matchStrings": [
+        "docker\\.io/rustdesk/rustdesk-server:(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "rustdesk/rustdesk-server"
+    },
+    {
+      "fileMatch": ["build-images.sh"],
+      "matchStrings": [
+        "docker\\.io/lejianwen/rustdesk-api:(?<currentValue>v[0-9]+\\.[0-9]+(\\.[0-9]+)?)"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "lejianwen/rustdesk-api",
+      "versioningTemplate": "loose"
+    }
+  ]
+}

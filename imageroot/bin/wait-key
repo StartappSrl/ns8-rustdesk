@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# hbbs generates its key pair on first start. Wait for the public key,
+# so the API server can read it when it starts.
+
+exec 1>&2
+
+for _ in $(seq 1 30); do
+    if podman volume exists rustdesk-data; then
+        mountpoint=$(podman volume inspect rustdesk-data --format '{{.Mountpoint}}')
+        if [[ -s "${mountpoint}/id_ed25519.pub" ]]; then
+            exit 0
+        fi
+    fi
+    sleep 1
+done
+
+echo "RustDesk public key not found after 30 seconds: is hbbs running?"
+exit 1

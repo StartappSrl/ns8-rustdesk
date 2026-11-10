@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# The volumes (key pair and API database) are already restored by the
+# core: re-apply the original configuration and start the services.
+
+import os
+import sys
+import json
+import agent
+import agent.tasks
+
+request = json.load(sys.stdin)
+renv = request['environment']
+
+response = agent.tasks.run(
+    agent_id=os.environ['AGENT_ID'],
+    action='configure-module',
+    data={
+        "host": renv["TRAEFIK_HOST"],
+        "rustdesk_host": renv.get("RUSTDESK_HOST", renv["TRAEFIK_HOST"]),
+        "lets_encrypt": renv.get("TRAEFIK_LETS_ENCRYPT") == "True",
+        "http2https": renv.get("TRAEFIK_HTTP2HTTPS") == "True",
+        "web_client": renv.get("RUSTDESK_WEB_CLIENT") == "1",
+    },
+)
+agent.assert_exp(response['exit_code'] == 0, "The configure-module subtask failed!")

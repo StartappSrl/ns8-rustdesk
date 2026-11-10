@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import subprocess
+
+def read_public_key():
+    """Return the hbbs public key, or "" if hbbs never started yet"""
+    proc = subprocess.run(
+        ["podman", "volume", "inspect", "rustdesk-data", "--format", "{{.Mountpoint}}"],
+        capture_output=True, text=True,
+    )
+    if proc.returncode != 0:
+        return ""
+    try:
+        with open(os.path.join(proc.stdout.strip(), "id_ed25519.pub")) as fp:
+            return fp.read().strip()
+    except OSError:
+        return ""
+
+
+public_key = read_public_key()
+
+config = {
+    "host": os.getenv("TRAEFIK_HOST", ""),
+    "rustdesk_host": os.getenv("RUSTDESK_HOST", ""),
+    "lets_encrypt": os.getenv("TRAEFIK_LETS_ENCRYPT", "True") == "True",
+    "http2https": os.getenv("TRAEFIK_HTTP2HTTPS", "True") == "True",
+    "web_client": os.getenv("RUSTDESK_WEB_CLIENT", "0") == "1",
+    "public_key": public_key,
+}
+
+json.dump(config, fp=sys.stdout)

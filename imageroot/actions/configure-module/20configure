@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import json
+import agent
+
+data = json.load(sys.stdin)
+
+host = data["host"]
+# Address the RustDesk clients use to reach hbbs/hbbr. It can differ from
+# the console host name, for example a public IP or a DNS-only name.
+rustdesk_host = data.get("rustdesk_host") or host
+web_client = data.get("web_client", False)
+
+agent.set_env("TRAEFIK_HOST", host)
+agent.set_env("TRAEFIK_HTTP2HTTPS", data.get("http2https", True))
+agent.set_env("TRAEFIK_LETS_ENCRYPT", data.get("lets_encrypt", True))
+agent.set_env("RUSTDESK_HOST", rustdesk_host)
+agent.set_env("RUSTDESK_WEB_CLIENT", "1" if web_client else "0")
+
+# Websocket ports are needed only by the browser client
+ports = ["21115/tcp", "21116/tcp", "21116/udp", "21117/tcp"]
+if web_client:
+    ports += ["21118/tcp", "21119/tcp"]
+agent.add_public_service(os.environ['MODULE_ID'], ports, replace_ports=True)

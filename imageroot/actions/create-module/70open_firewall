@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import agent
+import os
+
+# Open the RustDesk ports in the node firewall.
+# 21118/tcp and 21119/tcp (websocket) are needed only by the web client:
+# they are opened by configure-module when the web client is enabled.
+agent.add_public_service(os.environ['MODULE_ID'], [
+    "21115/tcp",  # hbbs: NAT type test
+    "21116/tcp",  # hbbs: ID registration, TCP hole punching
+    "21116/udp",  # hbbs: ID registration, heartbeat
+    "21117/tcp",  # hbbr: relay
+])

@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+import os
+import sys
+import agent
+import agent.tasks
+
+traefik_id = agent.resolve_agent_id('traefik@node')
+if traefik_id:
+    response = agent.tasks.run(
+        agent_id=traefik_id,
+        action='delete-route',
+        data={'instance': os.environ['MODULE_ID']},
+    )
+    # Do not block the module removal if the route is already gone
+    if response['exit_code'] != 0:
+        print("Warning: Traefik route removal failed", file=sys.stderr)

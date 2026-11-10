@@ -1,0 +1,77 @@
+{
+    "common": {
+        "required": "Required",
+        "work_in_progress": "Work in progress",
+        "processing": "Processing..."
+    },
+    "status": {
+        "title": "Status",
+        "app_instance": "Application instance",
+        "services": "Service | Services",
+        "app_images": "Application image | Application images",
+        "app_volumes": "Application volume | Application volumes",
+        "installation_node": "Installation node",
+        "node": "Node",
+        "name": "Name",
+        "size": "Size",
+        "created": "Created",
+        "mount": "Mount",
+        "no_services": "No services",
+        "no_images": "No images",
+        "no_volumes": "No volumes"
+    },
+    "settings": {
+        "title": "Settings",
+        "configure_instance": "Configure {instance}",
+        "save": "Save",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "host": "Web console host name",
+        "host_helper": "Fully qualified domain name of the web console and API server, e.g. rustdesk.example.org",
+        "rustdesk_host": "ID and relay server address",
+        "rustdesk_host_helper": "Host name or public IP address that RustDesk clients connect to. Leave empty to use the web console host name",
+        "lets_encrypt": "Request Let's Encrypt certificate",
+        "http_to_https": "Redirect HTTP to HTTPS",
+        "web_client": "Browser client",
+        "web_client_notice_title": "Ports 21118 and 21119 will be opened",
+        "web_client_notice": "The browser client connects with websockets. Browsers block unencrypted websockets from HTTPS pages, so the browser client needs a TLS proxy in front of these ports. See the README.",
+        "client_setup": "Client setup",
+        "client_setup_description": "In the RustDesk client, open Settings, then Network, then ID/Relay server and enter these values.",
+        "id_server": "ID server",
+        "relay_server": "Relay server",
+        "api_server": "API server",
+        "key": "Key",
+        "key_not_ready": "The key is generated when the ID server starts for the first time. Reload this page in a few seconds.",
+        "open_console": "Open web console",
+        "not_configured": "Save the settings to start the RustDesk server. The values for the clients will appear here.",
+        "domain_already_used_in_traefik": "This host name is already used by another application"
+    },
+    "about": {
+        "title": "About"
+    },
+    "task": {
+        "cannot_create_task": "Cannot create task {action}"
+    },
+    "action": {
+        "get-status": "Get status",
+        "get-configuration": "Get configuration",
+        "configure-module": "Configure module",
+        "get-module-info": "Get module info",
+        "get-name": "Get name",
+        "list-backup-repositories": "List backup repositories",
+        "list-backups": "List backups",
+        "list-installed-modules": "List installed modules"
+    },
+    "error": {
+        "error": "Error",
+        "generic_error": "Something went wrong",
+        "validation_error": "Validation error",
+        "network_error": "Network error",
+        "network_timeout": "Network timeout",
+        "401": "Invalid authentication",
+        "403": "Operation not authorized",
+        "404": "Resource not found",
+        "cannot_retrieve_module_info": "Cannot retrieve module info",
+        "cannot_retrieve_installed_modules": "Cannot retrieve installed modules"
+    }
+}
