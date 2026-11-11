@@ -44,4 +44,14 @@ if [ -f "${sw}" ]; then
     grep -q "\"js/dist/index.js\": \"${new_md5}\"" "${sw}"
 fi
 
+# Load the server public key before the client starts. The module writes
+# server-key.js when the API container starts (imageroot/bin/write-webclient-key):
+# without it, a client opened directly at /webclient/ has no key and hbbs
+# rejects it with "key mismatch".
+html="${web}/index.html"
+config_tag='<script src="/webclient-config/index.js"></script>'
+grep -qF "${config_tag}" "${html}"
+sed -i "s#${config_tag}#<script src=\"server-key.js\"></script>\n    ${config_tag}#" "${html}"
+grep -qF '<script src="server-key.js"></script>' "${html}"
+
 echo "patch-webclient: ok"

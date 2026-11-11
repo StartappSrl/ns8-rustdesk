@@ -1,0 +1,25 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Write the script that gives the hbbs public key to the browser client.
+# It is mounted as /webclient/server-key.js by rustdesk-api.service.
+
+set -e
+exec 1>&2
+
+target="${1:?usage: write-webclient-key <file>}"
+mountpoint=$(podman volume inspect rustdesk-data --format '{{.Mountpoint}}')
+key=$(tr -d '[:space:]' < "${mountpoint}/id_ed25519.pub")
+
+# A public key is plain base64: refuse anything else
+if ! [[ "${key}" =~ ^[A-Za-z0-9+/=]{20,100}$ ]]; then
+    echo "Unexpected public key format, browser client key not written"
+    exit 1
+fi
+
+printf "localStorage.setItem('key', '%s');\n" "${key}" > "${target}.tmp"
+mv -f "${target}.tmp" "${target}"
