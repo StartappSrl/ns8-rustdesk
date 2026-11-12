@@ -72,6 +72,13 @@ Check if the websocket routes reach hbbs and hbbr
         Should Be Equal    ${output}    101
     END
 
+Check if the download page is published
+    ${rc} =    Execute Command    runagent -m ${module_id} systemctl --user start client-downloads.service
+    ...    return_rc=True  return_stdout=False
+    Should Be Equal As Integers    ${rc}  0
+    ${output} =    Execute Command    curl -fsk -H 'Host: rustdesk.test.local' https://127.0.0.1/upload/client/
+    Should Contain    ${output}    rustdesk--
+
 Take screenshots
     [Tags]    ui
     Import Library    Browser

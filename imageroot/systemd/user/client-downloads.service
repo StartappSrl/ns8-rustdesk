@@ -1,0 +1,13 @@
+#
+# Download the latest official RustDesk client and refresh the download
+# page at https://<host>/upload/client/
+#
+[Unit]
+Description=RustDesk client download page
+After=hbbs.service network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=%E/state/environment
+WorkingDirectory=%E/state
+ExecStart=/usr/local/bin/runagent update-client-downloads

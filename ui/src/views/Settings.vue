@@ -174,6 +174,15 @@
               <NsCodeSnippet v-if="publicKey" hideExpandButton light>{{ publicKey }}</NsCodeSnippet>
               <p v-else class="hint">{{ $t("settings.key_not_ready") }}</p>
             </div>
+            <p class="mg-bottom downloads">
+              {{ $t("settings.downloads_description") }}
+            </p>
+            <NsButton
+              kind="secondary"
+              :icon="Launch20"
+              @click="openDownloads"
+              >{{ $t("settings.open_downloads") }}</NsButton
+            >
             <NsButton kind="tertiary" :icon="Launch20" @click="openConsole">{{
               $t("settings.open_console")
             }}</NsButton>
@@ -284,6 +293,9 @@ export default {
     this.getConfiguration();
   },
   methods: {
+    openDownloads() {
+      window.open(`${this.apiUrl}/upload/client/`, "_blank");
+    },
     openWebClient() {
       window.open(`${this.apiUrl}/webclient/`, "_blank");
     },
@@ -484,6 +496,10 @@ export default {
   margin-bottom: $spacing-02;
   font-size: 0.75rem;
   color: $text-02;
+}
+
+.downloads {
+  margin-top: $spacing-05;
 }
 
 .hint {

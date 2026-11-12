@@ -1,0 +1,289 @@
+#!/usr/bin/env python3
+
+#
+# Copyright (C) 2026 ns8-rustdesk contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+#
+# Client download page, served at https://<host>/upload/client/
+#
+# - fetch the latest official RustDesk release from GitHub
+# - download the Windows installer and verify its SHA-256 against the digest
+#   published by GitHub for that asset
+# - store it as rustdesk--<config>--.exe: the client reads the server
+#   configuration from its own file name on first start
+# - write index.html with download link, version and import instructions
+#
+# Any network or verification error leaves the files already published
+# untouched: the page keeps working with the previous version.
+#
+
+import base64
+import hashlib
+import html
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.request
+
+RELEASES_API = "https://api.github.com/repos/rustdesk/rustdesk/releases/latest"
+RELEASES_PAGE = "https://github.com/rustdesk/rustdesk/releases/latest"
+VOLUME = "rustdesk-downloads"
+USER_AGENT = "ns8-rustdesk"
+
+
+def log(message):
+    print(message, file=sys.stderr)
+
+
+def volume_path(name):
+    subprocess.run(["podman", "volume", "create", "--ignore", name],
+                   check=True, capture_output=True)
+    out = subprocess.run(["podman", "volume", "inspect", name, "--format", "{{.Mountpoint}}"],
+                         check=True, capture_output=True, text=True)
+    return out.stdout.strip()
+
+
+def public_key():
+    path = os.path.join(volume_path("rustdesk-data"), "id_ed25519.pub")
+    with open(path) as fp:
+        return fp.read().strip()
+
+
+def config_string(host, key, api):
+    """Reversed base64 of the server JSON, as RustDesk expects.
+
+    The string ends up in a file name and in a URL path, so it must not
+    contain "/". JSON ignores whitespace: add spaces until the encoding is
+    free of slashes.
+    """
+    for pad in range(64):
+        payload = '{' + ' ' * pad + f'"host":"{host}","key":"{key}","api":"{api}"' + '}'
+        encoded = base64.b64encode(payload.encode()).decode()[::-1].strip("=")
+        if "/" not in encoded:
+            return encoded
+    raise RuntimeError("cannot build a file-name safe configuration string")
+
+
+def latest_release():
+    request = urllib.request.Request(RELEASES_API, headers={
+        "Accept": "application/vnd.github+json",
+        "User-Agent": USER_AGENT,
+    })
+    with urllib.request.urlopen(request, timeout=30) as response:
+        return json.load(response)
+
+
+def find_asset(release, suffix):
+    version = release["tag_name"]
+    name = f"rustdesk-{version}-{suffix}"
+    for asset in release["assets"]:
+        if asset["name"] == name:
+            return asset
+    raise RuntimeError(f"asset {name} not found in release {version}")
+
+
+def download_verified(asset, destination_dir):
+    digest = asset.get("digest") or ""
+    if not digest.startswith("sha256:"):
+        raise RuntimeError(f"no SHA-256 digest published for {asset['name']}")
+    expected = digest.split(":", 1)[1].lower()
+
+    request = urllib.request.Request(asset["browser_download_url"], headers={"User-Agent": USER_AGENT})
+    sha = hashlib.sha256()
+    fd, tmp_path = tempfile.mkstemp(dir=destination_dir, prefix=".download-")
+    try:
+        with os.fdopen(fd, "wb") as out, urllib.request.urlopen(request, timeout=300) as response:
+            while True:
+                chunk = response.read(1 << 20)
+                if not chunk:
+                    break
+                sha.update(chunk)
+                out.write(chunk)
+        if sha.hexdigest() != expected:
+            raise RuntimeError(f"SHA-256 mismatch for {asset['name']}: got {sha.hexdigest()}, expected {expected}")
+    except BaseException:
+        os.unlink(tmp_path)
+        raise
+    return tmp_path, expected
+
+
+def human_size(size):
+    return f"{size / 1024 / 1024:.0f} MB"
+
+
+def write_page(target_dir, info):
+    e = {k: html.escape(str(v), quote=True) for k, v in info.items()}
+    page = f"""<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Scarica RustDesk – {e['api_host']}</title>
+<style>
+:root {{ --bg: #f6f7f9; --card: #ffffff; --text: #1d2430; --muted: #5b6574; --accent: #0b63ce; --accent-text: #ffffff; --line: #dde2e8; --code: #eef1f5; }}
+@media (prefers-color-scheme: dark) {{
+  :root {{ --bg: #12161c; --card: #1b2129; --text: #e7ebf0; --muted: #9aa5b3; --accent: #4c9bff; --accent-text: #0b1320; --line: #2c3540; --code: #232b35; }}
+}}
+* {{ box-sizing: border-box; }}
+body {{ margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }}
+main {{ max-width: 46rem; margin: 0 auto; padding: 2rem 1rem 3rem; }}
+h1 {{ font-size: 1.6rem; margin: 0 0 .25rem; }}
+h2 {{ font-size: 1.15rem; margin: 0 0 .75rem; }}
+p {{ margin: .5rem 0; }}
+.lead {{ color: var(--muted); margin-bottom: 1.5rem; }}
+section {{ background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }}
+.button {{ display: inline-block; background: var(--accent); color: var(--accent-text); text-decoration: none; font-weight: 600; padding: .7rem 1.2rem; border-radius: 8px; margin: .5rem 0; }}
+.meta {{ color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }}
+.warn {{ border-left: 3px solid var(--accent); padding-left: .75rem; }}
+ol, ul {{ padding-left: 1.25rem; margin: .5rem 0; }}
+li {{ margin: .25rem 0; }}
+code, .value {{ font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: .85rem; background: var(--code); border-radius: 6px; }}
+code {{ padding: .1rem .3rem; }}
+.row {{ display: flex; gap: .5rem; align-items: center; margin: .35rem 0; flex-wrap: wrap; }}
+.row .label {{ min-width: 7rem; color: var(--muted); font-size: .9rem; }}
+.value {{ flex: 1 1 14rem; padding: .4rem .55rem; overflow-x: auto; white-space: nowrap; }}
+button {{ font: inherit; font-size: .85rem; padding: .35rem .7rem; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; }}
+a {{ color: var(--accent); }}
+</style>
+</head>
+<body>
+<main>
+<h1>Scarica RustDesk</h1>
+<p class="lead">Client per l’assistenza remota, già configurato per il server <strong>{e['api_host']}</strong>.</p>
+
+<section>
+<h2>Windows</h2>
+<a class="button" href="{e['exe_name']}" download="{e['exe_name']}">Scarica per Windows</a>
+<p class="meta">Versione {e['version']} · {e['exe_size']} · 64 bit · aggiornato il {e['updated']}</p>
+<ol>
+<li>Avvia il file scaricato: RustDesk si collega da solo a questo server.</li>
+<li>Per installarlo in modo permanente, clicca <em>Installa</em> nella finestra del programma.</li>
+</ol>
+<p class="warn">Non rinominare il file: la configurazione del server è contenuta nel nome.</p>
+<p class="meta">SHA-256: {e['exe_sha256']}</p>
+</section>
+
+<section>
+<h2>macOS, Linux, Android</h2>
+<ol>
+<li>Scarica RustDesk dalla <a href="{e['release_url']}" rel="noopener">pagina ufficiale della versione {e['version']}</a> (macOS: file <code>.dmg</code>; Linux: <code>.deb</code>; Android: <code>.apk</code> universale) oppure dall’app store del dispositivo.</li>
+<li>Copia la configurazione qui sotto.</li>
+<li>In RustDesk apri <strong>Impostazioni → Rete</strong>, sblocca le impostazioni e scegli <strong>Importa configurazione server</strong>.</li>
+</ol>
+<div class="row"><span class="label">Configurazione</span><span class="value" id="config">{e['config']}</span><button type="button" data-copy="config">Copia</button></div>
+</section>
+
+<section>
+<h2>Configurazione manuale</h2>
+<p>In alternativa, in <strong>Impostazioni → Rete → Server ID/Relay</strong> inserisci:</p>
+<div class="row"><span class="label">Server ID</span><span class="value" id="idserver">{e['rustdesk_host']}</span><button type="button" data-copy="idserver">Copia</button></div>
+<div class="row"><span class="label">Server relay</span><span class="value" id="relay">{e['rustdesk_host']}</span><button type="button" data-copy="relay">Copia</button></div>
+<div class="row"><span class="label">Server API</span><span class="value" id="api">{e['api']}</span><button type="button" data-copy="api">Copia</button></div>
+<div class="row"><span class="label">Chiave</span><span class="value" id="key">{e['key']}</span><button type="button" data-copy="key">Copia</button></div>
+</section>
+</main>
+<script>
+document.querySelectorAll("button[data-copy]").forEach(function (button) {{
+  button.addEventListener("click", function () {{
+    var text = document.getElementById(button.dataset.copy).textContent;
+    navigator.clipboard.writeText(text).then(function () {{
+      button.textContent = "Copiato";
+      setTimeout(function () {{ button.textContent = "Copia"; }}, 1500);
+    }});
+  }});
+}});
+</script>
+</body>
+</html>
+"""
+    tmp = os.path.join(target_dir, ".index.html.tmp")
+    with open(tmp, "w") as fp:
+        fp.write(page)
+    os.replace(tmp, os.path.join(target_dir, "index.html"))
+
+
+def main():
+    api_host = os.environ.get("TRAEFIK_HOST")
+    if not api_host:
+        log("Module not configured yet: download page not generated")
+        return 0
+    rustdesk_host = os.environ.get("RUSTDESK_HOST") or api_host
+    api = f"https://{api_host}"
+    key = public_key()
+    config = config_string(rustdesk_host, key, api)
+    exe_name = f"rustdesk--{config}--.exe"
+
+    target_dir = volume_path(VOLUME)
+    state_file = os.path.join(target_dir, ".state.json")
+    try:
+        with open(state_file) as fp:
+            state = json.load(fp)
+    except (OSError, ValueError):
+        state = {}
+
+    try:
+        release = latest_release()
+        version = release["tag_name"]
+        if release.get("prerelease") or release.get("draft"):
+            raise RuntimeError(f"latest release {version} is not a stable release")
+        asset = find_asset(release, "x86_64.exe")
+        if state.get("version") != version or not os.path.exists(os.path.join(target_dir, state.get("exe_file", ""))):
+            log(f"Downloading RustDesk {version} for Windows...")
+            tmp_path, sha256 = download_verified(asset, target_dir)
+            state = {
+                "version": version,
+                "exe_file": ".rustdesk-x86_64.exe",
+                "exe_sha256": sha256,
+                "exe_size": asset["size"],
+                "release_url": release.get("html_url", RELEASES_PAGE),
+                "updated": time.strftime("%d/%m/%Y"),
+            }
+            os.replace(tmp_path, os.path.join(target_dir, state["exe_file"]))
+            os.chmod(os.path.join(target_dir, state["exe_file"]), 0o644)
+            with open(state_file, "w") as fp:
+                json.dump(state, fp)
+            log(f"RustDesk {version} downloaded and verified (SHA-256 {sha256})")
+        else:
+            log(f"RustDesk {version} already published")
+    except Exception as ex:
+        if not state:
+            log(f"Cannot publish the client: {ex}")
+            return 1
+        log(f"Warning: cannot check for a new client, keeping version {state['version']}: {ex}")
+
+    # Publish the verified installer under the configured name. Hard links
+    # avoid copying the file; old names (different config) are removed.
+    source = os.path.join(target_dir, state["exe_file"])
+    for name in os.listdir(target_dir):
+        if name.startswith("rustdesk--") and name.endswith("--.exe") and name != exe_name:
+            os.unlink(os.path.join(target_dir, name))
+    published = os.path.join(target_dir, exe_name)
+    if os.path.exists(published):
+        os.unlink(published)
+    os.link(source, published)
+
+    write_page(target_dir, {
+        "api_host": api_host,
+        "api": api,
+        "rustdesk_host": rustdesk_host,
+        "key": key,
+        "config": config,
+        "exe_name": exe_name,
+        "exe_size": human_size(state["exe_size"]),
+        "exe_sha256": state["exe_sha256"],
+        "version": state["version"],
+        "release_url": state["release_url"],
+        "updated": state["updated"],
+    })
+    log(f"Download page updated: https://{api_host}/upload/client/")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

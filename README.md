@@ -84,6 +84,31 @@ La chiave è leggibile anche da riga di comando:
 
     api-cli run module/rustdesk1/get-configuration | jq -r .public_key
 
+### Pagina di download del client
+
+Il modulo pubblica una pagina di download su `https://<host>/upload/client/`,
+da condividere con utenti e clienti:
+
+- **Windows**: l'ultima versione ufficiale di RustDesk, già rinominata con la
+  configurazione del server (`rustdesk--<configurazione>--.exe`). Al primo
+  avvio il client si collega da solo a questo server.
+- **macOS, Linux, Android**: link alla versione ufficiale e stringa di
+  configurazione da importare, più i valori per la configurazione manuale.
+
+Ogni notte il timer `client-downloads.timer` controlla su GitHub se è uscita
+una nuova versione stabile. Il nuovo installer viene pubblicato solo se la
+sua impronta SHA-256 coincide con quella pubblicata da GitHub; in caso di
+errore resta online la versione precedente. Se cambi il nome host, la pagina
+e il nome del file vengono aggiornati al salvataggio delle impostazioni.
+
+La pagina è pubblica anche con `admin_allowlist` attivo: contiene solo dati
+già pubblici (indirizzo del server e chiave pubblica).
+
+Per aggiornarla subito:
+
+    runagent -m rustdesk1 systemctl --user start client-downloads.service
+    runagent -m rustdesk1 journalctl --user -u client-downloads.service -n 5
+
 ### Primo accesso alla console web
 
 La console è su `https://<host>/_admin/`. Al primo avvio rustdesk-api crea
@@ -252,6 +277,8 @@ La rimozione cancella anche la rotta Traefik e chiude le porte nel firewall.
       actions/restore-module/        ripristino da backup
       bin/wait-key                   attende le chiavi di hbbs prima di avviare hbbr e l'API
       bin/purge-logs                 cancella i log oltre il periodo di conservazione
+      bin/update-client-downloads    scarica l'ultimo client e aggiorna la pagina di download
+      bin/write-webclient-key        passa la chiave del server al client da browser
       etc/state-include.conf         cosa finisce nel backup
       systemd/user/*.service         unit dei tre container
       update-module.d/               hook eseguiti dopo update-module

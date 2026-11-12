@@ -17,3 +17,8 @@ systemctl --user restart hbbs.service
 systemctl --user restart hbbr.service
 systemctl --user restart rustdesk-api.service
 systemctl --user enable --now purge-logs.timer
+
+# Download page: refresh it now (in the background, the download can take
+# a while) and then every day
+systemctl --user enable client-downloads.timer
+systemctl --user start --no-block client-downloads.timer client-downloads.service

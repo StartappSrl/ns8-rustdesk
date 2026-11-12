@@ -27,6 +27,7 @@ ExecStart=/usr/bin/podman run \
     --volume=rustdesk-api-data:/app/data:z \
     --volume=rustdesk-data:/keys:ro,z \
     --volume=%E/state/webclient-key.js:/app/resources/web/server-key.js:ro,z \
+    --volume=rustdesk-downloads:/app/resources/public/upload/client:ro,z \
     --env=RUSTDESK_API_LANG=it \
     "--env=RUSTDESK_API_ADMIN_TITLE=Console RustDesk" \
     --env=RUSTDESK_API_APP_WEB_CLIENT=${RUSTDESK_WEB_CLIENT} \

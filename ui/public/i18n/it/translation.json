@@ -54,7 +54,9 @@
         "admin_allowlist_helper": "Un indirizzo IP o una rete per riga, es. 203.0.113.10 oppure 192.168.1.0/24. Lascia vuoto per consentire l’accesso da ovunque. I client RustDesk possono sempre effettuare il login",
         "invalid_number": "Inserisci un numero intero nell’intervallo consentito",
         "invalid_ip_network": "{value} non è un indirizzo IP o una rete valida",
-        "open_web_client": "Apri client da browser"
+        "open_web_client": "Apri client da browser",
+        "open_downloads": "Pagina di download del client",
+        "downloads_description": "Condividi questa pagina con i tuoi utenti: offre l’ultima versione del client RustDesk per Windows, già configurata per questo server, e le istruzioni di importazione per gli altri sistemi."
     },
     "error": {
         "error": "Errore",

@@ -54,7 +54,9 @@
         "admin_allowlist_helper": "One IP address or network per line, e.g. 203.0.113.10 or 192.168.1.0/24. Leave empty to allow access from anywhere. RustDesk clients can always log in",
         "invalid_number": "Enter a whole number in the allowed range",
         "invalid_ip_network": "{value} is not a valid IP address or network",
-        "open_web_client": "Open browser client"
+        "open_web_client": "Open browser client",
+        "open_downloads": "Client download page",
+        "downloads_description": "Share this page with your users: it offers the latest RustDesk client for Windows, already configured for this server, and the import instructions for the other systems."
     },
     "about": {
         "title": "About"
