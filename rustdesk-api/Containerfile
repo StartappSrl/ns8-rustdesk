@@ -2,19 +2,41 @@
 # Copyright (C) 2026 ns8-rustdesk contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# rustdesk-api with the web console translated into Italian and the browser
-# client routed through HTTPS.
+# rustdesk-api with the web console translated into Italian, the browser
+# client routed through HTTPS and the server rebuilt with current Go and
+# patched dependencies.
 #
-# The upstream image is reused as is; only the admin console (rebuilt from
-# rustdesk-api-web with the Italian language added), the browser client
-# connection URLs, the server messages and the welcome page are replaced.
+# The upstream image provides the runtime and the static resources. These
+# parts are replaced:
+# - apimain: rebuilt from the same upstream commit with the current Go
+#   toolchain and the dependency versions in go.mod/go.sum (security fixes)
+# - admin console: rebuilt from rustdesk-api-web with the Italian language
+# - browser client: connection URLs patched for HTTPS
+# - server messages and welcome page: Italian
 #
 
-# Commit of lejianwen/rustdesk-api-web bundled in rustdesk-api v2.7.
-# When updating the upstream image below, update this commit too.
+# Upstream commits matching the image below (rustdesk-api v2.7).
+# When updating the upstream image, update both commits, then refresh
+# go.mod/go.sum (see README, "Vulnerabilità").
+ARG RUSTDESK_API_COMMIT=222792419f8b55c17b36bf5f423ec5ed7a53e2c4
 ARG RUSTDESK_API_WEB_COMMIT=3998c2a9213fcd047252776d0f0db33e6717026c
 
 FROM docker.io/lejianwen/rustdesk-api:v2.7 AS upstream
+
+# API server rebuilt with current Go and patched dependencies. Static
+# binary, like upstream, so it runs on the upstream Alpine runtime.
+FROM docker.io/library/golang:1.27.4-alpine3.23 AS api
+ARG RUSTDESK_API_COMMIT
+RUN apk add --no-cache git gcc musl-dev
+WORKDIR /src
+RUN git init -q . \
+    && git remote add origin https://github.com/lejianwen/rustdesk-api.git \
+    && git fetch -q --depth 1 origin "${RUSTDESK_API_COMMIT}" \
+    && git checkout -q FETCH_HEAD
+COPY go.mod go.sum ./
+ENV GOTOOLCHAIN=local GOFLAGS=-mod=mod
+RUN CGO_ENABLED=1 CGO_LDFLAGS="-static" \
+    go build -trimpath -ldflags "-s -w" -o /apimain ./cmd/apimain.go
 
 # Admin console with the Italian language
 FROM docker.io/library/node:20.20.2-bookworm AS web
@@ -42,6 +64,7 @@ FROM upstream
 # built its image, which has not been rebuilt since September 2025.
 RUN apk upgrade --no-cache && apk add --no-cache sqlite \
     && rm -rf /app/resources/admin /app/resources/web
+COPY --from=api /apimain /app/apimain
 COPY --from=web /src/dist /app/resources/admin
 COPY --from=webclient /webclient /app/resources/web
 COPY it.toml /app/resources/i18n/it.toml

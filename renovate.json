@@ -1,9 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended"
+  ],
   "regexManagers": [
     {
-      "fileMatch": ["build-images.sh"],
+      "fileMatch": [
+        "build-images.sh"
+      ],
       "matchStrings": [
         "docker\\.io/rustdesk/rustdesk-server:(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)"
       ],
@@ -13,15 +17,21 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["lejianwen/rustdesk-api"],
+      "matchPackageNames": [
+        "lejianwen/rustdesk-api"
+      ],
       "versioning": "loose",
       "prBodyNotes": [
-        "**Prima del merge:** aggiorna `RUSTDESK_API_WEB_COMMIT` in `rustdesk-api/Containerfile` con il commit di rustdesk-api-web usato da questa versione, e controlla se `en.json` / `en.toml` hanno nuove chiavi da tradurre in `it.json` / `it.toml`."
+        "**Prima del merge:** aggiorna `RUSTDESK_API_COMMIT` e `RUSTDESK_API_WEB_COMMIT` in `rustdesk-api/Containerfile` con i commit usati da questa versione, rigenera `rustdesk-api/go.mod` e `go.sum` (README, sezione Vulnerabilit\u00e0) e controlla se `en.json` / `en.toml` hanno nuove chiavi da tradurre."
       ]
     },
     {
-      "matchPackageNames": ["node"],
-      "matchFileNames": ["rustdesk-api/Containerfile"],
+      "matchPackageNames": [
+        "node"
+      ],
+      "matchFileNames": [
+        "rustdesk-api/Containerfile"
+      ],
       "allowedVersions": "<21"
     }
   ]

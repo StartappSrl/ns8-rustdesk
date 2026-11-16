@@ -163,6 +163,34 @@ meno di quelle del client desktop.
    dati personali. Indica nell'informativa che li raccogli e per quanto tempo
    (`log_retention_days`).
 
+### Vulnerabilità e aggiornamento delle dipendenze
+
+**rustdesk-api** non riceve aggiornamenti upstream da settembre 2025: il suo
+binario era compilato con Go 1.23 e dipendenze con vulnerabilità note
+(govulncheck: 114 vulnerabilità raggiungibili dal codice). Il modulo lo
+ricompila dallo stesso commit upstream con Go aggiornato e le versioni delle
+dipendenze fissate in `rustdesk-api/go.mod` e `go.sum`.
+
+Quando la scansione settimanale segnala nuove vulnerabilità nel binario
+`app/apimain`, aggiorna le dipendenze (serve Go installato):
+
+    git clone https://github.com/lejianwen/rustdesk-api /tmp/rustdesk-api
+    cd /tmp/rustdesk-api
+    git checkout <RUSTDESK_API_COMMIT del Containerfile>
+    cp ~/ns8-rustdesk/rustdesk-api/go.mod ~/ns8-rustdesk/rustdesk-api/go.sum .
+    go get <modulo>@<versione corretta>     # dal report della scansione
+    go mod tidy && CGO_ENABLED=1 go build ./cmd/apimain.go
+    cp go.mod go.sum ~/ns8-rustdesk/rustdesk-api/
+
+Per gli aggiornamenti della libreria standard di Go basta aggiornare
+l'immagine `golang` nel Containerfile (Renovate lo propone da solo).
+
+**rustdesk-server 1.1.16** (immagine ufficiale) contiene alcune dipendenze
+Rust con vulnerabilità note, tra cui `tungstenite` 0.17 (denial of service
+sui websocket). I websocket sono esposti solo con il client da browser
+attivo. Le dipendenze sono già aggiornate nel codice upstream, in attesa
+della prossima release ufficiale: Renovate la proporrà appena pubblicata.
+
 ### Limiti noti
 
 - **Uso del relay da parte di terzi.** La chiave è pubblica per natura (è
