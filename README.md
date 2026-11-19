@@ -210,6 +210,14 @@ Quando la scansione settimanale segnala nuove vulnerabilità nel binario
 Per gli aggiornamenti della libreria standard di Go basta aggiornare
 l'immagine `golang` nel Containerfile (Renovate lo propone da solo).
 
+**Interfaccia del modulo (`ui/yarn.lock`)**: le librerie usate per compilare
+l'interfaccia sono fissate a versioni corrette con `resolutions` in
+`ui/package.json`. Restano due avvisi accettati, che riguardano solo la
+compilazione dei file del modulo stesso: `postcss` 7, richiesto da Vue CLI 4
+del template NS8 e senza correzioni nella serie 7, e `vue` 2.7 (ReDoS nel
+compilatore dei template, che qui gira solo in fase di build). Si chiudono
+con il passaggio del template NS8 a Vue CLI 5 e Vue 3.
+
 **rustdesk-server 1.1.16** (immagine ufficiale) contiene alcune dipendenze
 Rust con vulnerabilità note, tra cui `tungstenite` 0.17 (denial of service
 sui websocket). I websocket sono esposti solo con il client da browser
