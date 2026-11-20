@@ -8,6 +8,7 @@
 import os
 import sys
 import json
+import re
 import ipaddress
 import agent
 
@@ -26,6 +27,22 @@ def fail(field, value, error):
 # The console host name must not be used by another Traefik route
 if host != os.environ.get('TRAEFIK_HOST', '') and agent.http_route_in_use(domain=host):
     fail('host', host, 'domain_already_used_in_traefik')
+
+# Address of hbbs/hbbr: a host name or an IPv4 address. It ends up in the
+# hbbs command line ("-r HOST:21117") and in the client configuration, so
+# anything else is refused. IPv6 is not accepted: "HOST:PORT" would be
+# ambiguous without brackets.
+LABEL = r'[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?'
+HOSTNAME_RE = re.compile(rf'^(?=.{{1,253}}$){LABEL}(\.{LABEL})*$')
+rustdesk_host = data.get("rustdesk_host") or ""
+if rustdesk_host:
+    try:
+        valid = ipaddress.ip_address(rustdesk_host).version == 4
+    except ValueError:
+        # All-numeric names like "10.0.0" are malformed IPs, not host names
+        valid = bool(HOSTNAME_RE.match(rustdesk_host)) and not rustdesk_host.replace('.', '').isdigit()
+    if not valid:
+        fail('rustdesk_host', rustdesk_host, 'invalid_rustdesk_host')
 
 # Every allowlist entry must be an IP address or a network in CIDR format
 for entry in data.get("admin_allowlist", []):

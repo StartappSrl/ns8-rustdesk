@@ -62,7 +62,8 @@ def config_string(host, key, api):
     free of slashes.
     """
     for pad in range(64):
-        payload = '{' + ' ' * pad + f'"host":"{host}","key":"{key}","api":"{api}"' + '}'
+        fields = json.dumps({"host": host, "key": key, "api": api}, separators=(",", ":"))
+        payload = '{' + ' ' * pad + fields[1:]
         encoded = base64.b64encode(payload.encode()).decode()[::-1].strip("=")
         if "/" not in encoded:
             return encoded
