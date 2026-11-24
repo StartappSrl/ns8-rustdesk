@@ -28,6 +28,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.request
 
 RELEASES_API = "https://api.github.com/repos/rustdesk/rustdesk/releases/latest"
@@ -70,11 +71,27 @@ def config_string(host, key, api):
     raise RuntimeError("cannot build a file-name safe configuration string")
 
 
+class RateLimited(RuntimeError):
+    pass
+
+
 def with_retries(what, fn, attempts=3, waits=(10, 30)):
-    """GitHub can drop connections or rate-limit for a while: retry before giving up."""
+    """GitHub can drop connections for a moment: retry before giving up.
+    The API rate limit (60 requests/hour per IP without a token) lasts until the
+    next hour, so retrying a few seconds later is useless: give up at once."""
     for attempt in range(1, attempts + 1):
         try:
             return fn()
+        except urllib.error.HTTPError as exc:
+            if exc.code in (403, 429) and exc.headers.get("x-ratelimit-remaining") == "0":
+                reset = exc.headers.get("x-ratelimit-reset", "")
+                when = time.strftime("%H:%M", time.localtime(int(reset))) if reset.isdigit() else "later"
+                raise RateLimited(f"GitHub API rate limit reached for this IP, it resets at {when}; the previous page stays online") from exc
+            if attempt == attempts:
+                raise
+            wait = waits[min(attempt - 1, len(waits) - 1)]
+            log(f"{what} failed ({exc}), retrying in {wait}s ({attempt}/{attempts})")
+            time.sleep(wait)
         except (OSError, ValueError) as exc:
             if attempt == attempts:
                 raise

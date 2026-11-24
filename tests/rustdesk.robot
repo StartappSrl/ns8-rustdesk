@@ -24,6 +24,13 @@ Port is listening
 Client downloads service succeeds
     ${rc} =    Execute Command    runagent -m ${module_id} systemctl --user start client-downloads.service
     ...    return_rc=True  return_stdout=False
+    IF    ${rc} != 0
+        # Shared CI runners exhaust the anonymous GitHub API quota (60 requests/hour
+        # per IP): that is an environment limit, not a module failure
+        ${journal} =    Execute Command    runagent -m ${module_id} journalctl --user -u client-downloads.service --no-pager -n 5
+        ${limited} =    Run Keyword And Return Status    Should Contain    ${journal}    rate limit
+        Skip If    ${limited}    GitHub API rate limit on the CI runner: download page not checked
+    END
     Should Be Equal As Integers    ${rc}  0
 
 Log client downloads journal
@@ -82,12 +89,11 @@ Check if the websocket routes reach hbbs and hbbr
     END
 
 Check if the download page is published
-    # The service downloads the client from GitHub: shared CI runners hit transient
-    # network errors and rate limits, so the whole step is retried
-    Wait Until Keyword Succeeds    3 times    60 seconds    Client downloads service succeeds
-    [Teardown]    Run Keyword If Test Failed    Log client downloads journal
+    # The service retries transient network errors by itself (see update-client-downloads)
+    Client downloads service succeeds
     ${output} =    Execute Command    curl -fsk -H 'Host: rustdesk.test.local' https://127.0.0.1/upload/client/
     Should Contain    ${output}    rustdesk--
+    [Teardown]    Run Keyword If Test Failed    Log client downloads journal
 
 Take screenshots
     [Tags]    ui
