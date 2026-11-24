@@ -21,6 +21,15 @@ Port is listening
     ...    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}  0
 
+Client downloads service succeeds
+    ${rc} =    Execute Command    runagent -m ${module_id} systemctl --user start client-downloads.service
+    ...    return_rc=True  return_stdout=False
+    Should Be Equal As Integers    ${rc}  0
+
+Log client downloads journal
+    ${output} =    Execute Command    runagent -m ${module_id} journalctl --user -u client-downloads.service --no-pager -n 40
+    Log    ${output}    console=True
+
 *** Test Cases ***
 Check if rustdesk is installed correctly
     ${output}  ${rc} =    Execute Command    add-module ${IMAGE_URL} 1
@@ -73,9 +82,10 @@ Check if the websocket routes reach hbbs and hbbr
     END
 
 Check if the download page is published
-    ${rc} =    Execute Command    runagent -m ${module_id} systemctl --user start client-downloads.service
-    ...    return_rc=True  return_stdout=False
-    Should Be Equal As Integers    ${rc}  0
+    # The service downloads the client from GitHub: shared CI runners hit transient
+    # network errors and rate limits, so the whole step is retried
+    Wait Until Keyword Succeeds    3 times    60 seconds    Client downloads service succeeds
+    [Teardown]    Run Keyword If Test Failed    Log client downloads journal
     ${output} =    Execute Command    curl -fsk -H 'Host: rustdesk.test.local' https://127.0.0.1/upload/client/
     Should Contain    ${output}    rustdesk--
 

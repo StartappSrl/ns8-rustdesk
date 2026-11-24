@@ -70,6 +70,19 @@ def config_string(host, key, api):
     raise RuntimeError("cannot build a file-name safe configuration string")
 
 
+def with_retries(what, fn, attempts=3, waits=(10, 30)):
+    """GitHub can drop connections or rate-limit for a while: retry before giving up."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except (OSError, ValueError) as exc:
+            if attempt == attempts:
+                raise
+            wait = waits[min(attempt - 1, len(waits) - 1)]
+            log(f"{what} failed ({exc}), retrying in {wait}s ({attempt}/{attempts})")
+            time.sleep(wait)
+
+
 def latest_release():
     request = urllib.request.Request(RELEASES_API, headers={
         "Accept": "application/vnd.github+json",
@@ -229,14 +242,14 @@ def main():
         state = {}
 
     try:
-        release = latest_release()
+        release = with_retries("GitHub release lookup", latest_release)
         version = release["tag_name"]
         if release.get("prerelease") or release.get("draft"):
             raise RuntimeError(f"latest release {version} is not a stable release")
         asset = find_asset(release, "x86_64.exe")
         if state.get("version") != version or not os.path.exists(os.path.join(target_dir, state.get("exe_file", ""))):
             log(f"Downloading RustDesk {version} for Windows...")
-            tmp_path, sha256 = download_verified(asset, target_dir)
+            tmp_path, sha256 = with_retries("Download", lambda: download_verified(asset, target_dir))
             state = {
                 "version": version,
                 "exe_file": ".rustdesk-x86_64.exe",
