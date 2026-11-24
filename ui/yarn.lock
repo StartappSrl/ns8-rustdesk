@@ -11806,12 +11806,12 @@ __metadata:
   linkType: hard
 
 "url-parse@npm:^1.4.3, url-parse@npm:^1.5.1":
-  version: 1.5.3
-  resolution: "url-parse@npm:1.5.3"
+  version: 1.5.10
+  resolution: "url-parse@npm:1.5.10"
   dependencies:
     querystringify: "npm:^2.1.1"
     requires-port: "npm:^1.0.0"
-  checksum: 10c0/b1a5f236f5eb1a2d0f0939acea8229e5eb0618b6eeaae3e1d08536d61c79547c18c313905eee5ac5376297f966b0297ed2157103c991d838ef4d235d2c5958b5
+  checksum: 10c0/bd5aa9389f896974beb851c112f63b466505a04b4807cea2e5a3b7092f6fbb75316f0491ea84e44f66fed55f1b440df5195d7e3a8203f64fcefa19d182f5be87
   languageName: node
   linkType: hard
 
