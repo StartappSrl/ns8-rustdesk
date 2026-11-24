@@ -5488,11 +5488,9 @@ __metadata:
   linkType: hard
 
 "eventsource@npm:^1.0.7":
-  version: 1.1.0
-  resolution: "eventsource@npm:1.1.0"
-  dependencies:
-    original: "npm:^1.0.0"
-  checksum: 10c0/fabb4641ffb459f4d5baaf8b90c2dae2ada01252b3ca7f920797cf00b0f23236a9c4f2163aed9f2ded799c947f892321e9ee2d243c703ebd4a400be57692f474
+  version: 1.1.2
+  resolution: "eventsource@npm:1.1.2"
+  checksum: 10c0/34170eec0962a98b607d2c33d2deaf57d0f1d51324cd4bad7807c6cf3c0545536ee4b2ecf8645236a85fddc59034dec31f0be20b18b75954b3d5b90621c116be
   languageName: node
   linkType: hard
 
@@ -8789,15 +8787,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"original@npm:^1.0.0":
-  version: 1.0.2
-  resolution: "original@npm:1.0.2"
-  dependencies:
-    url-parse: "npm:^1.4.3"
-  checksum: 10c0/af143d5be62b055ffb6fc2a0d08a650b822f48feca4ea21940c1f7a147727a317faedca254394ad0028ddaa4eecf7cf4376c370d746386cc35974e9122ebb14a
-  languageName: node
-  linkType: hard
-
 "os-browserify@npm:^0.3.0":
   version: 0.3.0
   resolution: "os-browserify@npm:0.3.0"
@@ -11805,7 +11794,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"url-parse@npm:^1.4.3, url-parse@npm:^1.5.1":
+"url-parse@npm:^1.5.1":
   version: 1.5.3
   resolution: "url-parse@npm:1.5.3"
   dependencies:
