@@ -3658,7 +3658,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^2.0.1, chalk@npm:^2.1.0, chalk@npm:^2.3.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
+"chalk@npm:^2.0.1, chalk@npm:^2.1.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -7651,12 +7651,12 @@ __metadata:
   linkType: hard
 
 "launch-editor@npm:^2.2.1":
-  version: 2.2.1
-  resolution: "launch-editor@npm:2.2.1"
+  version: 2.14.2
+  resolution: "launch-editor@npm:2.14.2"
   dependencies:
-    chalk: "npm:^2.3.0"
-    shell-quote: "npm:^1.6.1"
-  checksum: 10c0/651dbe81d418a6c7176bdc5408df6a14502747b5f6115884c36b7479215e6b0f06a689038e05f8261a225ba6af4183e36ded1d61e2dc2c74de20a4cc96305eec
+    picocolors: "npm:^1.1.1"
+    shell-quote: "npm:^1.10.0"
+  checksum: 10c0/cf66c75534170142269bfc1749df8a4b5178ad644d358aa08d4feda9ecb1ba7a26191a76ea2cecea95c59235c142486b928b58eaf0cd77377d21e42ed5c3e100
   languageName: node
   linkType: hard
 
@@ -10651,10 +10651,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"shell-quote@npm:^1.6.1":
-  version: 1.7.2
-  resolution: "shell-quote@npm:1.7.2"
-  checksum: 10c0/656aefdcdc394560ca091140a58b95e97f43d5e14bb60ff4a92556ca48841e49af6e837441e887c7890c7a86ae8542960c90e460a86799b68c53271784909edb
+"shell-quote@npm:^1.10.0":
+  version: 1.12.0
+  resolution: "shell-quote@npm:1.12.0"
+  checksum: 10c0/1605a4ed6a758bf13de7cb8197a4184d8015f7a4dbdcd6cd4a717d5b30b3ae7666300cc4ae7f3155cf80ace9739e9e82061ee5aa1a648f53f5fab31a220816d0
   languageName: node
   linkType: hard
 
