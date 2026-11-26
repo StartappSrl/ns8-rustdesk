@@ -1,0 +1,116 @@
+diff --git a/src/rendezvous_server.rs b/src/rendezvous_server.rs
+index dff45eb..1b34057 100644
+--- a/src/rendezvous_server.rs
++++ b/src/rendezvous_server.rs
+@@ -16,7 +16,7 @@ use hbb_common::{
+         register_pk_response::Result::{TOO_FREQUENT, UUID_MISMATCH},
+         *,
+     },
+-    tcp::{listen_any, FramedStream},
++    tcp::{listen_any, Encrypt, FramedStream},
+     timeout,
+     tokio::{
+         self,
+@@ -31,7 +31,7 @@ use hbb_common::{
+     AddrMangle, ResultType,
+ };
+ use ipnetwork::Ipv4Network;
+-use sodiumoxide::crypto::sign;
++use sodiumoxide::crypto::{box_, secretbox, sign};
+ use std::{
+     collections::HashMap,
+     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
+@@ -51,7 +51,8 @@ const REG_TIMEOUT: i64 = 30_000;
+ type TcpStreamSink = SplitSink<Framed<TcpStream, BytesCodec>, Bytes>;
+ type WsSink = SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, tungstenite::Message>;
+ enum Sink {
+-    TcpStream(TcpStreamSink),
++    // The cipher is set once the client completes the secure TCP key exchange
++    TcpStream(TcpStreamSink, Option<Encrypt>),
+     Ws(WsSink),
+ }
+ type Sender = mpsc::UnboundedSender<Data>;
+@@ -823,7 +824,11 @@ impl RendezvousServer {
+         if let Some(sink) = sink.as_mut() {
+             if let Ok(bytes) = msg.write_to_bytes() {
+                 match sink {
+-                    Sink::TcpStream(s) => {
++                    Sink::TcpStream(s, enc) => {
++                        let bytes = match enc.as_mut() {
++                            Some(enc) => enc.enc(&bytes),
++                            None => bytes,
++                        };
+                         allow_err!(s.send(Bytes::from(bytes)).await);
+                     }
+                     Sink::Ws(ws) => {
+@@ -1178,8 +1183,33 @@ impl RendezvousServer {
+             }
+         } else {
+             let (a, mut b) = Framed::new(stream, BytesCodec::new()).split();
+-            sink = Some(Sink::TcpStream(a));
+-            while let Ok(Some(Ok(bytes))) = timeout(30_000, b.next()).await {
++            sink = Some(Sink::TcpStream(a, None));
++            // Secure TCP: offer the key exchange; the first message from the client
++            // either completes it or is a plain request from a client that skips it.
++            let mut kx_sk = self.key_exchange_phase1(&mut sink).await;
++            let mut recv_enc: Option<Encrypt> = None;
++            while let Ok(Some(Ok(mut bytes))) = timeout(30_000, b.next()).await {
++                if let Some(enc) = recv_enc.as_mut() {
++                    if let Err(err) = enc.dec(&mut bytes) {
++                        log::warn!("Secure TCP: cannot decrypt data from {:?}: {}", addr, err);
++                        break;
++                    }
++                } else if let Some(our_sk) = kx_sk.take() {
++                    if let Ok(msg_in) = RendezvousMessage::parse_from_bytes(&bytes) {
++                        if let Some(rendezvous_message::Union::KeyExchange(ex)) = &msg_in.union {
++                            let Some(sym_key) = Self::key_exchange_phase2(ex, &our_sk) else {
++                                log::warn!("Secure TCP: invalid key exchange from {:?}", addr);
++                                break;
++                            };
++                            if let Some(Sink::TcpStream(_, enc)) = sink.as_mut() {
++                                *enc = Some(Encrypt::new(sym_key.clone()));
++                            }
++                            recv_enc = Some(Encrypt::new(sym_key));
++                            log::debug!("Secure TCP: connection from {:?} encrypted", addr);
++                            continue;
++                        }
++                    }
++                }
+                 if !self.handle_tcp(&bytes, &mut sink, addr, key, ws).await {
+                     break;
+                 }
+@@ -1218,6 +1248,34 @@ impl RendezvousServer {
+     }
+ 
+     #[inline]
++    /// Secure TCP, phase 1: send a fresh X25519 public key, signed with the server key.
++    /// Clients that have the server public key (and are logged in to the API server)
++    /// verify the signature and answer with phase 2; the others ignore this message.
++    /// Returns the secret half of the key pair, or None without a server key.
++    async fn key_exchange_phase1(&self, sink: &mut Option<Sink>) -> Option<box_::SecretKey> {
++        let sk = self.inner.sk.as_ref()?;
++        let (our_pk, our_sk) = box_::gen_keypair();
++        let mut msg_out = RendezvousMessage::new();
++        msg_out.set_key_exchange(KeyExchange {
++            keys: vec![sign::sign(&our_pk.0, sk).into()],
++            ..Default::default()
++        });
++        Self::send_to_sink(sink, msg_out).await;
++        Some(our_sk)
++    }
++
++    /// Secure TCP, phase 2: the client sends its public key and the symmetric key,
++    /// sealed for our phase 1 key with a zero nonce (keys are single use).
++    fn key_exchange_phase2(ex: &KeyExchange, our_sk: &box_::SecretKey) -> Option<secretbox::Key> {
++        if ex.keys.len() != 2 {
++            return None;
++        }
++        let their_pk = box_::PublicKey::from_slice(&ex.keys[0])?;
++        let nonce = box_::Nonce([0u8; box_::NONCEBYTES]);
++        let sym_key = box_::open(&ex.keys[1], &nonce, &their_pk, our_sk).ok()?;
++        secretbox::Key::from_slice(&sym_key)
++    }
++
+     fn get_server_sk(key: &str) -> (String, Option<sign::SecretKey>) {
+         let mut out_sk = None;
+         let mut key = key.to_owned();

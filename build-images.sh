@@ -19,9 +19,13 @@ reponame="rustdesk"
 # renovate: datasource=npm packageName=corepack
 corepack_version=0.36.0
 
-# Upstream container image. Pin exact versions: every module release
-# must be reproducible. Renovate opens PRs when new versions come out.
-rustdesk_server_image="docker.io/rustdesk/rustdesk-server:1.1.16"
+# hbbs/hbbr image: the upstream release with hbbs rebuilt for secure TCP
+# (see rustdesk-server/Containerfile). Published next to the module image,
+# with the same tag.
+echo "Build the rustdesk-server image with secure TCP on hbbs..."
+buildah build --layers --file rustdesk-server/Containerfile     --tag "${repobase}/rustdesk-server" rustdesk-server
+images+=("${repobase}/rustdesk-server")
+rustdesk_server_image="${repobase}/rustdesk-server:${IMAGETAG:-latest}"
 
 # The API/web console image is built here, with the Italian translation
 # (see rustdesk-api/Containerfile). It is published next to the module

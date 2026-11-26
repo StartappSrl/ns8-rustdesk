@@ -7,15 +7,35 @@ Il modulo esegue tre container Podman rootless:
 
 | Servizio | Immagine | Ruolo | Porte |
 |---|---|---|---|
-| `hbbs.service` | `rustdesk/rustdesk-server` | Server ID / rendezvous | 21115/tcp, 21116/tcp+udp (21118/tcp locale, per il client da browser via Traefik) |
+| `hbbs.service` | `rustdesk/rustdesk-server` con hbbs ricompilato (vedi sotto) | Server ID / rendezvous | 21115/tcp, 21116/tcp+udp (21118/tcp locale, per il client da browser via Traefik) |
 | `hbbr.service` | `rustdesk/rustdesk-server` | Server relay | 21117/tcp (21119/tcp locale, per il client da browser via Traefik) |
 | `rustdesk-api.service` | `lejianwen/rustdesk-api` | Server API e console web: utenti, dispositivi, rubriche, log | 127.0.0.1:`TCP_PORT`, pubblicata da Traefik in HTTPS |
 
 hbbs e hbbr usano la rete dell'host, necessaria per le connessioni dirette
 (P2P). Poiché le porte sono fisse, è possibile **una sola istanza per nodo**.
 
-Le versioni delle immagini sono fissate in `build-images.sh` e in
-`rustdesk-api/Containerfile`.
+Le versioni delle immagini sono fissate in `build-images.sh`,
+`rustdesk-server/Containerfile` e `rustdesk-api/Containerfile`.
+
+### Client con login alla console (secure TCP)
+
+Un client RustDesk che ha fatto login con l'account della console cifra la
+connessione verso hbbs: aspetta che hbbs gli mandi una chiave firmata con la
+chiave del server. L'hbbs open source non lo fa mai, quindi con l'immagine
+ufficiale ogni connessione di un client loggato fallisce dopo 18 secondi con
+*Failed to secure tcp: deadline has elapsed*, mentre i client senza login
+funzionano.
+
+Il modulo ricompila hbbs dalla stessa release ufficiale con
+`rustdesk-server/0001-hbbs-secure-tcp.patch`, che aggiunge lo scambio di
+chiavi: a ogni connessione TCP sulla porta 21116 hbbs invia una chiave X25519
+nuova, firmata con la chiave del server; il client risponde con la chiave
+simmetrica cifrata per quella chiave e da lì la connessione è cifrata. I
+client senza login ignorano il messaggio e restano in chiaro come prima. hbbr
+e la chiave del server non cambiano. È lo schema della versione 0 del
+protocollo, lo stesso dei server che lo supportano da anni; i client più
+recenti offrono anche una versione 1 con chiavi separate per direzione, non
+ancora implementata qui.
 
 ## Lingua italiana
 
@@ -218,7 +238,8 @@ del template NS8 e senza correzioni nella serie 7, e `vue` 2.7 (ReDoS nel
 compilatore dei template, che qui gira solo in fase di build). Si chiudono
 con il passaggio del template NS8 a Vue CLI 5 e Vue 3.
 
-**rustdesk-server 1.1.16** (immagine ufficiale) contiene alcune dipendenze
+**rustdesk-server 1.1.16** (immagine ufficiale, e hbbs ricompilato con lo
+stesso `Cargo.lock`) contiene alcune dipendenze
 Rust con vulnerabilità note, tra cui `tungstenite` 0.17 (denial of service
 sui websocket). I websocket sono esposti solo con il client da browser
 attivo. Le dipendenze sono già aggiornate nel codice upstream, in attesa
@@ -291,6 +312,7 @@ La rimozione cancella anche la rotta Traefik e chiude le porte nel firewall.
       systemd/user/*.service         unit dei tre container
       update-module.d/               hook eseguiti dopo update-module
     rustdesk-api/                    immagine della console web in italiano
+    rustdesk-server/                 immagine di hbbs/hbbr con secure TCP su hbbs
     ui/                              interfaccia del modulo (Vue 2 + Carbon)
     tests/                           test Robot Framework
     .github/workflows/               build, pubblicazione e test
